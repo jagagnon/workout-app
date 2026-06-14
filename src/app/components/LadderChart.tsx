@@ -25,6 +25,8 @@ export function LadderChart({ data }: { data: Pt[] }) {
   const vals = data.map((d) => d.kg);
   const min = Math.floor((Math.min(0, ...vals) - 5) / 10) * 10;
   const max = Math.max(10, Math.ceil((Math.max(0, ...vals) + 5) / 10) * 10);
+  const ticks: number[] = [];
+  for (let t = min; t <= max; t += 10) ticks.push(t);
   return (
     <ResponsiveContainer width="100%" height={300}>
       <AreaChart data={data} margin={{ top: 12, right: 14, bottom: 4, left: -8 }}>
@@ -35,7 +37,7 @@ export function LadderChart({ data }: { data: Pt[] }) {
           </linearGradient>
         </defs>
         <XAxis dataKey="label" tickLine={false} axisLine={{ stroke: "#26262f" }} minTickGap={24} />
-        <YAxis domain={[min, max]} tickLine={false} axisLine={false} width={42} unit="kg" allowDecimals={false} tickCount={Math.min(7, (max - min) / 10 + 1)} />
+        <YAxis domain={[min, max]} ticks={ticks} tickFormatter={(v) => `${v}kg`} tickLine={false} axisLine={false} width={46} allowDecimals={false} interval={0} />
         <ReferenceLine
           y={0}
           stroke="#6fd0e6"
