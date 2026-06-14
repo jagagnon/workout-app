@@ -6,6 +6,7 @@ create table if not exists exercise (
                     check (primary_metric in ('reps','seconds','meters')),
   default_load_type text not null default 'bodyweight'
                     check (default_load_type in ('added','assisted','external','bodyweight')),
+  is_key          boolean not null default false,
   created_at      timestamptz not null default now()
 );
 

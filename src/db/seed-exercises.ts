@@ -20,15 +20,18 @@ const EXERCISES: [string, string[], "reps" | "seconds" | "meters", string][] = [
   ["Goblet cossack squat", ["cossack squat", "goblet cossack"], "reps", "external"],
 ];
 
+const KEY = new Set(["Muscle-up", "Pull-ups", "Chin-ups", "Dips", "Push-ups"]);
+
 async function main() {
   for (const [name, aliases, metric, loadType] of EXERCISES) {
     await sql`
-      insert into exercise (canonical_name, aliases, primary_metric, default_load_type)
-      values (${name}, ${aliases}, ${metric}, ${loadType})
+      insert into exercise (canonical_name, aliases, primary_metric, default_load_type, is_key)
+      values (${name}, ${aliases}, ${metric}, ${loadType}, ${KEY.has(name)})
       on conflict (canonical_name) do update
         set aliases = excluded.aliases,
             primary_metric = excluded.primary_metric,
-            default_load_type = excluded.default_load_type
+            default_load_type = excluded.default_load_type,
+            is_key = excluded.is_key
     `;
   }
   console.log(`Seeded ${EXERCISES.length} exercises`);

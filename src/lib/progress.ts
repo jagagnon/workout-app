@@ -44,7 +44,15 @@ export async function stalledLifts(n = 3) {
 }
 
 export async function prBoard() {
-  return (await sql`select * from v_prs order by canonical_name`) as unknown as Array<Record<string, unknown>>;
+  // Key lifts only — full roster always shown; un-logged ones come back null ("—").
+  return (await sql`
+    select e.id as exercise_id, e.canonical_name,
+           p.max_added_load, p.min_assist_load, p.max_metric
+    from exercise e
+    left join v_prs p on p.exercise_id = e.id
+    where e.is_key
+    order by e.canonical_name
+  `) as unknown as Array<Record<string, unknown>>;
 }
 
 export async function recentSessions(limit = 20) {
