@@ -23,8 +23,8 @@ export function LadderChart({ data }: { data: Pt[] }) {
     return <div className="empty center">No muscle-up sessions logged yet.<br />Log one to start the ladder.</div>;
   }
   const vals = data.map((d) => d.kg);
-  const min = Math.min(0, ...vals) - 5;
-  const max = Math.max(0, ...vals) + 5;
+  const min = Math.floor((Math.min(0, ...vals) - 5) / 10) * 10;
+  const max = Math.max(10, Math.ceil((Math.max(0, ...vals) + 5) / 10) * 10);
   return (
     <ResponsiveContainer width="100%" height={300}>
       <AreaChart data={data} margin={{ top: 12, right: 14, bottom: 4, left: -8 }}>
@@ -35,13 +35,13 @@ export function LadderChart({ data }: { data: Pt[] }) {
           </linearGradient>
         </defs>
         <XAxis dataKey="label" tickLine={false} axisLine={{ stroke: "#26262f" }} minTickGap={24} />
-        <YAxis domain={[min, max]} tickLine={false} axisLine={false} width={42} unit="kg" />
+        <YAxis domain={[min, max]} tickLine={false} axisLine={false} width={42} unit="kg" allowDecimals={false} tickCount={Math.min(7, (max - min) / 10 + 1)} />
         <ReferenceLine
           y={0}
           stroke="#6fd0e6"
           strokeDasharray="5 5"
           strokeOpacity={0.85}
-          label={{ value: "BODYWEIGHT", position: "insideTopRight", fill: "#6fd0e6", fontSize: 9, letterSpacing: 1 }}
+          label={{ value: "BODYWEIGHT", position: "insideBottomRight", fill: "#6fd0e6", fontSize: 9, letterSpacing: 1 }}
         />
         <Tooltip content={<Tip />} cursor={{ stroke: "#3a3a47" }} />
         <Area type="monotone" dataKey="kg" stroke="none" fill="url(#ladderFill)" isAnimationActive={false} />
