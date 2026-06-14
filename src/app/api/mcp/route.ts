@@ -14,7 +14,7 @@ const entrySchema = z.object({
   notes: z.string().optional(),
 });
 
-const handler = createMcpHandler(
+const mcpHandler = createMcpHandler(
   (server) => {
     server.tool(
       "log_workout",
@@ -54,4 +54,13 @@ const handler = createMcpHandler(
   { streamableHttpEndpoint: "/api/mcp" },
 );
 
-export { handler as GET, handler as POST };
+async function authed(req: Request): Promise<Response> {
+  const url = new URL(req.url);
+  const secret = process.env.MCP_SECRET;
+  if (!secret || url.searchParams.get("key") !== secret) {
+    return new Response("unauthorized", { status: 401 });
+  }
+  return mcpHandler(req);
+}
+
+export { authed as GET, authed as POST };
