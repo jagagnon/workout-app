@@ -42,11 +42,16 @@ export async function logWorkout(input: LogInput): Promise<LogResult> {
   const results: EntryResult[] = [];
   for (const e of input.entries) {
     const m = matchExercise(e.exercise, registry);
-    if (m.exercise_id == null) {
+    // Never auto-write a fuzzy guess — surface it for confirmation so a wrong
+    // match (e.g. "Ring muscle-up row" -> "Muscle-up") can't silently corrupt data.
+    if (m.exercise_id == null || m.resolution === "fuzzy") {
+      const guess = m.resolution === "fuzzy" ? m.canonical_name : null;
       results.push({
-        input: e, exercise_id: null, canonical_name: null, resolution: m.resolution,
-        candidates: m.candidates, written: false, is_pr: false,
-        display: `${e.exercise} (unmatched)`,
+        input: e, exercise_id: null, canonical_name: null,
+        resolution: "needs_confirmation",
+        candidates: guess ? [guess, ...(m.candidates ?? [])] : m.candidates,
+        written: false, is_pr: false,
+        display: `${e.exercise} (needs confirmation${guess ? ` — did you mean ${guess}?` : ""})`,
       });
       continue;
     }

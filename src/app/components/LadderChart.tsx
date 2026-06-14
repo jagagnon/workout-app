@@ -1,17 +1,59 @@
 "use client";
-import { LineChart, Line, XAxis, YAxis, ReferenceLine, Tooltip, ResponsiveContainer } from "recharts";
+import {
+  AreaChart, Area, Line, XAxis, YAxis, ReferenceLine, Tooltip, ResponsiveContainer,
+} from "recharts";
 
-export function LadderChart({ data }: { data: { date: string; load_value: number | null }[] }) {
-  const pts = data.filter((d) => d.load_value != null);
+type Pt = { label: string; kg: number };
+
+function Tip({ active, payload }: { active?: boolean; payload?: Array<{ payload: Pt }> }) {
+  if (!active || !payload?.length) return null;
+  const p = payload[0].payload;
+  const v = p.kg;
+  const txt = v < 0 ? `${v} kg assist` : v > 0 ? `+${v} kg added` : "bodyweight";
   return (
-    <ResponsiveContainer width="100%" height={260}>
-      <LineChart data={pts} margin={{ top: 8, right: 16, bottom: 8, left: 0 }}>
-        <XAxis dataKey="date" tick={{ fontSize: 11 }} />
-        <YAxis tick={{ fontSize: 11 }} />
-        <ReferenceLine y={0} stroke="#888" strokeDasharray="4 4" label="bodyweight" />
-        <Tooltip />
-        <Line type="monotone" dataKey="load_value" stroke="#e0245e" strokeWidth={2} dot />
-      </LineChart>
+    <div className="tip">
+      <div className="tip-d">{p.label}</div>
+      <div className="tip-v">{txt}</div>
+    </div>
+  );
+}
+
+export function LadderChart({ data }: { data: Pt[] }) {
+  if (!data.length) {
+    return <div className="empty center">No muscle-up sessions logged yet.<br />Log one to start the ladder.</div>;
+  }
+  const vals = data.map((d) => d.kg);
+  const min = Math.min(0, ...vals) - 5;
+  const max = Math.max(0, ...vals) + 5;
+  return (
+    <ResponsiveContainer width="100%" height={300}>
+      <AreaChart data={data} margin={{ top: 12, right: 14, bottom: 4, left: -8 }}>
+        <defs>
+          <linearGradient id="ladderFill" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#ff5a1f" stopOpacity={0.35} />
+            <stop offset="100%" stopColor="#ff5a1f" stopOpacity={0} />
+          </linearGradient>
+        </defs>
+        <XAxis dataKey="label" tickLine={false} axisLine={{ stroke: "#26262f" }} minTickGap={24} />
+        <YAxis domain={[min, max]} tickLine={false} axisLine={false} width={42} unit="kg" />
+        <ReferenceLine
+          y={0}
+          stroke="#6fd0e6"
+          strokeDasharray="5 5"
+          strokeOpacity={0.85}
+          label={{ value: "BODYWEIGHT", position: "insideTopRight", fill: "#6fd0e6", fontSize: 9, letterSpacing: 1 }}
+        />
+        <Tooltip content={<Tip />} cursor={{ stroke: "#3a3a47" }} />
+        <Area type="monotone" dataKey="kg" stroke="none" fill="url(#ladderFill)" isAnimationActive={false} />
+        <Line
+          type="monotone"
+          dataKey="kg"
+          stroke="#ff5a1f"
+          strokeWidth={2.5}
+          dot={{ r: 3, fill: "#ff5a1f", stroke: "#0a0a0c", strokeWidth: 1.5 }}
+          activeDot={{ r: 5, fill: "#ff5a1f", stroke: "#0a0a0c", strokeWidth: 2 }}
+        />
+      </AreaChart>
     </ResponsiveContainer>
   );
 }

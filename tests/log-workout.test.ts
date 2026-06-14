@@ -41,3 +41,11 @@ test("unmatched exercise returns needs_confirmation and is NOT written", async (
   assert.equal(z.resolution, "needs_confirmation");
   assert.equal(z.written, false);
 });
+
+test("fuzzy match is NOT auto-written (needs confirmation)", async () => {
+  const res = await logWorkout({ date: "2099-01-01", region: "U",
+    entries: [{ exercise: "Ring muscle-up row", metric: 5, load_type: "bodyweight" }] });
+  const r = res.results.find((x) => x.input.exercise === "Ring muscle-up row")!;
+  assert.equal(r.written, false);
+  assert.equal(r.resolution, "needs_confirmation");
+});
