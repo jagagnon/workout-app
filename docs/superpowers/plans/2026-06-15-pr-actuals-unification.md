@@ -476,7 +476,57 @@ If the generator's encoding instructions (Task 4) diverge from `workout-log` SKI
 
 ---
 
-### Task 7: Y-axis fix commit + deploy
+### Task 7: Fix inverted assisted-PR aggregate
+
+**Files:**
+- Modify: `src/db/schema.sql` (the `v_prs` view)
+- Modify: `src/lib/log-workout.ts` (inline PR query)
+
+**Context:** assisted `load_value` is negative; "best" = LEAST assist = closest to 0 = `max(load_value)`. Both the view and the PR-detection query currently use `min(load_value)`, which returns the most-assisted value (wrong). The column name `min_assist_load` reads as "minimum *assistance*" — semantically what we want — so keep the name and only change the aggregate to `max`. No consumer renames needed.
+
+- [ ] **Step 1: Fix the view aggregate**
+
+In `src/db/schema.sql`, change:
+```sql
+  min(e.load_value)  filter (where e.load_type = 'assisted')           as min_assist_load,
+```
+to:
+```sql
+  max(e.load_value)  filter (where e.load_type = 'assisted')           as min_assist_load,
+```
+
+- [ ] **Step 2: Re-apply the view to Neon**
+
+Run: `cd /Users/julien/Documents/claude/workout-app && npm run db:schema`
+Expected: runs without error (the file uses `create or replace view v_prs`).
+
+- [ ] **Step 3: Fix the PR-detection query**
+
+In `src/lib/log-workout.ts`, change:
+```sql
+        min(load_value) filter (where load_type = 'assisted') as min_assist,
+```
+to:
+```sql
+        max(load_value) filter (where load_type = 'assisted') as min_assist,
+```
+The comparison `e.load_value > Number(prRow.min_assist)` is already correct once `min_assist` holds the least-assisted value.
+
+- [ ] **Step 4: Verify on Neon**
+
+Run: `cd /Users/julien/Documents/claude/workout-app && curl -s "https://project-753tk.vercel.app/api/prs" | npx --yes json` (after the view is re-applied).
+Expected: Muscle-up `min_assist_load = -25` (single imported value; with a future `-20` it would correctly show `-20`).
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add src/db/schema.sql src/lib/log-workout.ts
+git commit -m "fix: assisted PR = least assist (max load_value), not most"
+```
+
+---
+
+### Task 8: Y-axis fix commit + deploy
 
 **Files:**
 - Modify: `src/app/components/LadderChart.tsx` (already edited locally: `margin.left` `-8`→`8`, `YAxis width` `46`→`56`)
@@ -500,7 +550,7 @@ git commit -m "fix: y-axis labels no longer clip (positive left margin + wider g
 
 - [ ] **Step 4: Push (auto-deploys) — only after telling Julien**
 
-This push triggers the live deploy (auto-deploy is on). Confirm with Julien first, then:
+This push ships both code changes in this phase (the Task 7 `log-workout.ts` fix and this y-axis fix) and triggers the live deploy (auto-deploy is on). Confirm with Julien first, then:
 ```bash
 git push
 ```
@@ -508,9 +558,9 @@ Expected: push succeeds; Vercel builds master; live in ~1 min. Verify the ladder
 
 ---
 
-## Open issue discovered during planning (decide before/with Task 3)
-
-**Assisted-PR direction in `v_prs` may be inverted.** `v_prs.min_assist_load = min(load_value)` returns the **most-assisted** value (e.g. `-25`), but for a muscle-up "best" means **least** assist (closest to 0). `log-workout.ts` `is_pr` for assisted already detects PRs in the right direction (`load_value > min_assist`), but the PR-board column shows the most-assisted number. This is pre-existing and not caused by this work. Options: (a) leave as-is (ladder hero already shows current working assist from the latest point, so the board column is cosmetic); (b) add a one-line fix changing the board to surface `max(load_value)` for assisted. **Flagged to Julien — not auto-fixed.** The `-20kg (ORM)` Notion row is intentionally **not** imported (only the working `-25kg`), pending this decision.
+## Resolved decisions
+- **Assisted-PR direction** — confirmed inverted (`min` returned most-assisted). Scheduled as **Task 7** (flip to `max(load_value)`, both view and detection query).
+- **`-20kg (ORM)` Muscle-up row** — intentionally **not** imported; only the working `-25kg` baseline. Keeps the ladder a working-assist trend without an ORM outlier. Can be added later if desired.
 
 ---
 
