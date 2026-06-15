@@ -10,6 +10,7 @@ const EXERCISES: [string, string[], "reps" | "seconds" | "meters", string][] = [
   ["Inverted rows", ["inverted row", "bodyweight row"], "reps", "bodyweight"],
   ["Straight-arm pulldown", ["straight arm pulldown"], "reps", "external"],
   ["Kneeling KB press", ["kneeling kettlebell press", "kb press"], "reps", "external"],
+  ["Kettlebell Z press", ["kb z press", "z press", "kettlebell z press", "k bell z press"], "reps", "external"],
   ["Single-arm landmine press", ["landmine press"], "reps", "external"],
   ["L-sit hold", ["l sit", "l-sit"], "seconds", "bodyweight"],
   ["Front lever tuck hold", ["front lever tuck", "tuck front lever"], "seconds", "bodyweight"],

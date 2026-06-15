@@ -46,7 +46,7 @@ select
   e.exercise_id,
   x.canonical_name,
   max(e.load_value)  filter (where e.load_type in ('added','external')) as max_added_load,
-  min(e.load_value)  filter (where e.load_type = 'assisted')           as min_assist_load,
+  max(e.load_value)  filter (where e.load_type = 'assisted')           as min_assist_load,
   max(e.metric_value)                                                   as max_metric
 from entry e
 join exercise x on x.id = e.exercise_id

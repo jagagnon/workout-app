@@ -59,7 +59,7 @@ export async function logWorkout(input: LogInput): Promise<LogResult> {
     const [prRow] = await sql`
       select
         max(load_value) filter (where load_type in ('added','external')) as max_added,
-        min(load_value) filter (where load_type = 'assisted') as min_assist,
+        max(load_value) filter (where load_type = 'assisted') as min_assist,
         max(metric_value) as max_metric
       from entry where exercise_id = ${m.exercise_id}
     `;
