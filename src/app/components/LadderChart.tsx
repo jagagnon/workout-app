@@ -29,7 +29,7 @@ export function LadderChart({ data }: { data: Pt[] }) {
   for (let t = min; t <= max; t += 10) ticks.push(t);
   return (
     <ResponsiveContainer width="100%" height={300}>
-      <AreaChart data={data} margin={{ top: 12, right: 14, bottom: 4, left: -8 }}>
+      <AreaChart data={data} margin={{ top: 12, right: 14, bottom: 4, left: 8 }}>
         <defs>
           <linearGradient id="ladderFill" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor="#ff5a1f" stopOpacity={0.35} />
@@ -37,7 +37,7 @@ export function LadderChart({ data }: { data: Pt[] }) {
           </linearGradient>
         </defs>
         <XAxis dataKey="label" tickLine={false} axisLine={{ stroke: "#26262f" }} minTickGap={24} />
-        <YAxis domain={[min, max]} ticks={ticks} tickFormatter={(v) => `${v}kg`} tickLine={false} axisLine={false} width={46} allowDecimals={false} interval={0} />
+        <YAxis domain={[min, max]} ticks={ticks} tickFormatter={(v) => `${v}kg`} tickLine={false} axisLine={false} width={56} allowDecimals={false} interval={0} />
         <ReferenceLine
           y={0}
           stroke="#6fd0e6"
