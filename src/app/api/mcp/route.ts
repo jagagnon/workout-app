@@ -1,7 +1,7 @@
 import { createMcpHandler } from "mcp-handler";
 import { z } from "zod";
 import { logWorkout } from "../../../lib/log-workout";
-import { exerciseProgression, muscleUpLadder, prBoard } from "../../../lib/progress";
+import { exerciseProgression, muscleUpLadder, prBoard, recentActuals } from "../../../lib/progress";
 import { logPlan, recentPlans } from "../../../lib/plans";
 
 const entrySchema = z.object({
@@ -77,6 +77,16 @@ const mcpHandler = createMcpHandler(
       { region: z.enum(["U", "L"]), limit: z.number().optional() },
       async ({ region, limit }) => {
         const rows = await recentPlans(region, limit ?? 4);
+        return { content: [{ type: "text", text: JSON.stringify(rows) }] };
+      },
+    );
+
+    server.tool(
+      "get_recent_sessions",
+      "Get the last N actual sessions for a region (U or L), newest first — per-exercise results plus rpe, feel, and mu_note. Use to autoregulate: compare what was done vs prescribed, and read recent feel/MU notes.",
+      { region: z.enum(["U", "L"]), limit: z.number().optional() },
+      async ({ region, limit }) => {
+        const rows = await recentActuals(region, limit ?? 4);
         return { content: [{ type: "text", text: JSON.stringify(rows) }] };
       },
     );

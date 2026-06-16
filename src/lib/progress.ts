@@ -55,6 +55,23 @@ export async function prBoard() {
   `) as unknown as Array<Record<string, unknown>>;
 }
 
+export async function recentActuals(region: "U" | "L", limit = 4) {
+  return (await sql`
+    select s.date, s.region, s.type, s.rpe, s.feel, s.mu_note,
+           json_agg(json_build_object(
+             'exercise', x.canonical_name, 'metric', e.metric_value, 'metric_type', e.metric_type,
+             'load_type', e.load_type, 'load_value', e.load_value, 'per_side', e.per_side
+           ) order by e.id) as entries
+    from session s
+    join entry e on e.session_id = s.id
+    join exercise x on x.id = e.exercise_id
+    where s.region = ${region}
+    group by s.id
+    order by s.date desc
+    limit ${limit}
+  `) as unknown as Array<Record<string, unknown>>;
+}
+
 export async function recentSessions(limit = 20) {
   return (await sql`
     select s.id, s.date, s.region, s.type,
