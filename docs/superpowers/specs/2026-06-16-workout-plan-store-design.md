@@ -18,10 +18,15 @@ This is **Phase 2**; Phase 1 (PR/actuals unification onto Neon) is complete.
 ### Naming
 The planned session is a **plan** (vs the existing `session` = actuals / what was done). Table `plan`; MCP tools `log_plan`, `get_recent_plans`.
 
+### "Same type" means region, not stimulus
+The variety and MU-progression checks key on **region** (Upper/Lower), across recent sessions **regardless of stimulus**. Stimulus (Strength/Hypertrophy/Volume) is a separate axis that only drives the 2:1 rotation cadence.
+
+This matters: a stimulus-keyed check would compare today's Strength session only against previous *Strength* sessions — so an exercise used in the immediately-preceding *Hypertrophy* Upper session is invisible and reappears back-to-back. Keying on region across the last 3 Upper sessions (any stimulus) catches it: the Strength session sees yesterday's Hypertrophy session used weighted pull-ups and rotates to chin-ups / chest-to-bar. The core *pattern* still recurs; the *variation* moves.
+
 ### Lookback window (why 3–4, not more)
-- The old rule looked back only the **last 2** same-type sessions — which an A/B/A/B alternation defeats (each session looks "different from last" while only two templates cycle).
-- Variety and MU-progression now check the **last 3** same-type sessions; the read fetches the **last 4 same-region** (small buffer).
-- Looking back further is overkill: beyond ~4 same-type sessions (~1.5+ weeks at 3× Upper/week), a movement is a fresh stimulus again and *should* be reusable to track progression. Constraining against older history just drains the exercise pool with no adaptive benefit.
+- The old rule looked back only the **last 2** sessions — which an A/B/A/B alternation defeats (each session looks "different from last" while only two templates cycle).
+- Variety and MU-progression now check the **last 3** sessions of the same region; the read fetches the **last 4 same-region** (small buffer).
+- Looking back further is overkill: beyond ~4 sessions of a region (~1.5+ weeks at 3× Upper/week), a movement is a fresh stimulus again and *should* be reusable to track progression. Constraining against older history just drains the exercise pool with no adaptive benefit.
 
 ## Data flow (after Phase 2)
 
@@ -65,12 +70,12 @@ Both wrap thin lib functions in `src/lib/plans.ts`, mirroring the existing `log-
 
 - **Data to fetch:** replace row 4 ("Workout log → Fetch Notion page …") with "Recent plans → call `get_recent_plans` (region, last 4)".
 - **Stimulus rotation:** read the `stimulus` of recent plans (was: Notion `S:` labels).
-- **Variety — updated rule:** check against the **last 3** same-region plans (was last 2). Enforce:
-  - **Main block:** core *patterns* recur every session (a vertical pull, a dip/push), but the specific *variation* must rotate vs the last 3 (e.g. weighted pull-ups → chin-ups → chest-to-bar — not the same flavour twice running).
-  - **Accessories/correctives:** ≥ half must differ from the last 3 same-type sessions.
+- **Variety — updated rule:** check against the **last 3 same-region plans, regardless of stimulus** (was last 2; and was effectively per-stimulus, which let back-to-back Strength→Hypertrophy repeats slip through). Enforce:
+  - **Main block:** core *patterns* recur every session (a vertical pull, a dip/push), but the specific *variation* must rotate vs the last 3 (e.g. weighted pull-ups → chin-ups → chest-to-bar — not the same flavour twice running, even across a stimulus change).
+  - **Accessories/correctives:** ≥ half must differ from the last 3 same-region sessions.
   - **MU drill:** rotates (as today).
   - **Warm-ups:** the two mandatory slots stay; rotate the other two vs recent.
-- **MU-progression:** read the MU drill from the last 3 upper plans.
+- **MU-progression:** read the MU drill from the last 3 Upper plans (any stimulus).
 - **LOG SESSION:** replace "Prepend to Notion Workout log via `notion-update-page`" with "call `log_plan` (region, stimulus, body)". Keep the exact `W/A1/…/F` body format. Drop the Notion log URL.
 - **Gym-wifi:** if `get_recent_plans` fails, fall back to asking Julien his last 1–2 same-type sessions (existing pattern); `log_plan` is the write that should land.
 
