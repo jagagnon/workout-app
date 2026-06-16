@@ -1,4 +1,6 @@
 import { muscleUpLadder, stalledLifts, prBoard, recentSessions } from "../lib/progress";
+import { formatLoad } from "../lib/load";
+import type { LoadType } from "../lib/types";
 import { LadderChart } from "./components/LadderChart";
 import { StalledList } from "./components/StalledList";
 import { PrBoard } from "./components/PrBoard";
@@ -32,7 +34,11 @@ export default async function Home() {
     : currentKg === 0 ? "bodyweight reached — ascend"
     : `+${currentKg} kg weighted`;
 
-  const sess = sessions as Array<{ id: number; date: unknown; region: string | null; type: string | null; entries: unknown[] }>;
+  const sess = sessions as Array<{
+    id: number; date: unknown; region: string | null; type: string | null;
+    rpe: number | null; feel: string | null; mu_note: string | null;
+    entries: Array<{ exercise: string; metric: number; load_type: string; load_value: number | null; unit: string }>;
+  }>;
 
   return (
     <main className="wrap">
@@ -89,12 +95,25 @@ export default async function Home() {
           ) : (
             <div className="sessions">
               {sess.map((s) => (
-                <div className="session-row" key={s.id}>
-                  <span className="date">{fmtDate(s.date)}</span>
-                  {s.region && <span className={`tag ${s.region === "U" ? "u" : ""}`}>{s.region === "U" ? "Upper" : "Lower"}</span>}
-                  {s.type && <span className="tag">{s.type}</span>}
-                  <span className="cnt">{s.entries.length} {s.entries.length === 1 ? "lift" : "lifts"}</span>
-                </div>
+                <details className="session-row" key={s.id}>
+                  <summary>
+                    <span className="date">{fmtDate(s.date)}</span>
+                    {s.region && <span className={`tag ${s.region === "U" ? "u" : ""}`}>{s.region === "U" ? "Upper" : "Lower"}</span>}
+                    {s.type && <span className="tag">{s.type}</span>}
+                    {s.rpe != null && <span className="tag">RPE {s.rpe}</span>}
+                    <span className="cnt">{s.entries.length} {s.entries.length === 1 ? "lift" : "lifts"}</span>
+                  </summary>
+                  <div className="session-detail">
+                    {s.entries.map((e, i) => (
+                      <div className="entry-line" key={i}>
+                        <span className="ex">{e.exercise}</span>
+                        <span className="res">{e.metric} @ {formatLoad(e.load_type as LoadType, e.load_value, e.unit)}</span>
+                      </div>
+                    ))}
+                    {s.feel && <div className="session-note"><span className="note-k">feel</span>{s.feel}</div>}
+                    {s.mu_note && <div className="session-note"><span className="note-k">MU</span>{s.mu_note}</div>}
+                  </div>
+                </details>
               ))}
             </div>
           )}
