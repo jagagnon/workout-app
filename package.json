@@ -10,7 +10,8 @@
     "test": "node --import tsx --test tests/*.test.ts",
     "db:schema": "psql \"$DATABASE_URL\" -f src/db/schema.sql",
     "db:seed": "tsx --env-file=.env.local src/db/seed-exercises.ts",
-    "db:migrate-prs": "tsx --env-file=.env.local src/db/migrate-prs.ts"
+    "db:migrate-prs": "tsx --env-file=.env.local src/db/migrate-prs.ts",
+    "db:seed-plans": "tsx --env-file=.env.local src/db/seed-plans.ts"
   },
   "dependencies": {
     "mcp-handler": "^1.1.0",
