@@ -2,6 +2,7 @@ import { createMcpHandler } from "mcp-handler";
 import { z } from "zod";
 import { logWorkout } from "../../../lib/log-workout";
 import { exerciseProgression, muscleUpLadder, prBoard } from "../../../lib/progress";
+import { logPlan, recentPlans } from "../../../lib/plans";
 
 const entrySchema = z.object({
   exercise: z.string(),
@@ -49,6 +50,36 @@ const mcpHandler = createMcpHandler(
     server.tool("get_prs", "Get the PR board.", {}, async () => {
       return { content: [{ type: "text", text: JSON.stringify(await prBoard()) }] };
     });
+
+    server.tool(
+      "log_plan",
+      "Save the prescribed plan for a session (the programmed exercise blocks) so future generations can rotate variety and read stimulus history. body = the verbatim W/A1/…/F block.",
+      {
+        date: z.string().optional(),
+        region: z.enum(["U", "L"]),
+        stimulus: z.enum(["Strength", "Hypertrophy", "Volume"]).optional(),
+        body: z.string(),
+      },
+      async (args) => {
+        const row = await logPlan(args);
+        return {
+          content: [{
+            type: "text",
+            text: `Plan saved ${row.date} ${row.region}${row.stimulus ? " · " + row.stimulus : ""}`,
+          }],
+        };
+      },
+    );
+
+    server.tool(
+      "get_recent_plans",
+      "Get the last N prescribed plans for a region (U or L), newest first, regardless of stimulus — for stimulus rotation, variety checks, and MU-progression.",
+      { region: z.enum(["U", "L"]), limit: z.number().optional() },
+      async ({ region, limit }) => {
+        const rows = await recentPlans(region, limit ?? 4);
+        return { content: [{ type: "text", text: JSON.stringify(rows) }] };
+      },
+    );
   },
   {},
   { streamableHttpEndpoint: "/api/mcp" },
