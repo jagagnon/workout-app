@@ -74,7 +74,7 @@ export async function recentActuals(region: "U" | "L", limit = 4) {
 
 export async function recentSessions(limit = 20) {
   return (await sql`
-    select s.id, s.date, s.region, s.type,
+    select s.id, s.date, s.region, s.type, s.rpe, s.feel, s.mu_note,
            json_agg(json_build_object(
              'exercise', x.canonical_name, 'metric', e.metric_value,
              'load_type', e.load_type, 'load_value', e.load_value, 'unit', e.load_unit
