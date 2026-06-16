@@ -62,3 +62,7 @@ create table if not exists plan (
   unique (date, region)
 );
 create index if not exists plan_region_date on plan (region, date desc);
+
+alter table session add column if not exists rpe      smallint check (rpe between 1 and 10);
+alter table session add column if not exists feel     text;
+alter table session add column if not exists mu_note  text;

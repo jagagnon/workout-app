@@ -16,6 +16,9 @@ export interface LogInput {
   date?: string;
   region?: "U" | "L";
   type?: "Strength" | "Hypertrophy" | "Volume";
+  rpe?: number;
+  feel?: string;
+  mu_note?: string;
   entries: EntryInput[];
 }
 

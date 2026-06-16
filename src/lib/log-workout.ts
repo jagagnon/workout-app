@@ -32,9 +32,14 @@ export async function logWorkout(input: LogInput): Promise<LogResult> {
   `) as unknown as ExerciseRow[];
 
   const [sessionRow] = await sql`
-    insert into session (date, region, type, notes)
-    values (${date}, ${input.region ?? null}, ${input.type ?? null}, ${null})
-    on conflict (date, region) do update set type = coalesce(excluded.type, session.type)
+    insert into session (date, region, type, notes, rpe, feel, mu_note)
+    values (${date}, ${input.region ?? null}, ${input.type ?? null}, ${null},
+            ${input.rpe ?? null}, ${input.feel ?? null}, ${input.mu_note ?? null})
+    on conflict (date, region) do update set
+      type    = coalesce(excluded.type, session.type),
+      rpe     = coalesce(excluded.rpe, session.rpe),
+      feel    = coalesce(excluded.feel, session.feel),
+      mu_note = coalesce(excluded.mu_note, session.mu_note)
     returning id
   `;
   const session_id = sessionRow.id as number;
