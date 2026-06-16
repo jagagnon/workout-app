@@ -51,3 +51,14 @@ select
 from entry e
 join exercise x on x.id = e.exercise_id
 group by e.exercise_id, x.canonical_name;
+
+create table if not exists plan (
+  id         serial primary key,
+  date       date not null,
+  region     text check (region in ('U','L')),
+  stimulus   text check (stimulus in ('Strength','Hypertrophy','Volume')),
+  body       text not null,
+  created_at timestamptz not null default now(),
+  unique (date, region)
+);
+create index if not exists plan_region_date on plan (region, date desc);
