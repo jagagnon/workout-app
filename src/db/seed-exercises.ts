@@ -4,8 +4,10 @@ import { sql } from "./client";
 const EXERCISES: [string, string[], "reps" | "seconds" | "meters", string][] = [
   ["Muscle-up", ["muscle up", "mu", "bar muscle-up", "ring muscle-up"], "reps", "assisted"],
   ["Pull-ups", ["pull up", "pullup", "pull-up"], "reps", "bodyweight"],
+  ["Chest-to-bar pull-up", ["chest to bar", "c2b", "ctb", "chest-to-bar", "c2b pull-up"], "reps", "bodyweight"],
   ["Chin-ups", ["chin up", "chins", "weighted chin-ups", "chinup"], "reps", "bodyweight"],
   ["Dips", ["dip", "weighted dips", "ring dips", "russian dips"], "reps", "bodyweight"],
+  ["Paused dips", ["paused dip", "pause dips", "tempo dips"], "reps", "bodyweight"],
   ["Push-ups", ["push up", "pushup", "press-up"], "reps", "bodyweight"],
   ["Inverted rows", ["inverted row", "bodyweight row"], "reps", "bodyweight"],
   ["Straight-arm pulldown", ["straight arm pulldown"], "reps", "external"],

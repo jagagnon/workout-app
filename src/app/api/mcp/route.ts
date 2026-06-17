@@ -1,6 +1,7 @@
 import { createMcpHandler } from "mcp-handler";
 import { z } from "zod";
 import { logWorkout } from "../../../lib/log-workout";
+import { addExercise } from "../../../lib/add-exercise";
 import { exerciseProgression, muscleUpLadder, prBoard, recentActuals } from "../../../lib/progress";
 import { logPlan, recentPlans } from "../../../lib/plans";
 
@@ -24,6 +25,9 @@ const mcpHandler = createMcpHandler(
         date: z.string().optional(),
         region: z.enum(["U", "L"]).optional(),
         type: z.enum(["Strength", "Hypertrophy", "Volume"]).optional(),
+        rpe: z.number().optional(),
+        feel: z.string().optional(),
+        mu_note: z.string().optional(),
         entries: z.array(entrySchema),
       },
       async (args) => {
@@ -34,6 +38,24 @@ const mcpHandler = createMcpHandler(
             : `⚠ '${r.input.exercise}' unmatched — candidates: ${(r.candidates ?? []).join(", ")}`,
         );
         return { content: [{ type: "text", text: `Logged ${res.date}\n${lines.join("\n")}` }] };
+      },
+    );
+
+    server.tool(
+      "add_exercise",
+      "Create a new canonical exercise. Only call this after the user confirms the exercise is genuinely new — not a typo or variant of one that already exists. Returns a collision error if the name (or an alias) already exists, and a warning if it merely resembles an existing exercise.",
+      {
+        canonical_name: z.string(),
+        aliases: z.array(z.string()).optional(),
+        primary_metric: z.enum(["reps", "seconds", "meters"]).optional(),
+        default_load_type: z.enum(["added", "assisted", "external", "bodyweight"]).optional(),
+      },
+      async (args) => {
+        const res = await addExercise(args);
+        const text = res.created
+          ? `✓ Created '${res.canonical_name}'${res.warning ? `  (note: similar to '${res.warning}')` : ""}`
+          : `⚠ Not created — '${res.collision}' already exists. Use that, or re-send log_workout with the corrected name.`;
+        return { content: [{ type: "text", text }] };
       },
     );
 
