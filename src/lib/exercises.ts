@@ -26,6 +26,32 @@ function lev(a: string, b: string): number {
   return d[m][n];
 }
 
+export type ConflictResult =
+  | { kind: "collision"; existing: string }
+  | { kind: "warn"; similar: string }
+  | { kind: "ok" };
+
+// Decide whether a proposed new canonical name is safe to create.
+// Hard-block only on an exact name/alias collision (the DB unique constraint
+// backs this up); a shared word token is surfaced as a non-blocking warning so
+// legit-but-close variations (e.g. "Paused dips" vs "Dips") still go through.
+export function checkExerciseConflict(name: string, registry: ExerciseRow[]): ConflictResult {
+  const q = norm(name);
+  for (const e of registry) {
+    if (norm(e.canonical_name) === q || e.aliases.some((a) => norm(a) === q))
+      return { kind: "collision", existing: e.canonical_name };
+  }
+  const qTokens = new Set(q.split(" ").filter((t) => t.length >= 3));
+  let best: { name: string; shared: number } | null = null;
+  for (const e of registry) {
+    const shared = norm(e.canonical_name)
+      .split(" ")
+      .filter((t) => t.length >= 3 && qTokens.has(t)).length;
+    if (shared > 0 && (!best || shared > best.shared)) best = { name: e.canonical_name, shared };
+  }
+  return best ? { kind: "warn", similar: best.name } : { kind: "ok" };
+}
+
 export function matchExercise(raw: string, registry: ExerciseRow[]): MatchResult {
   const q = norm(raw);
 
