@@ -11,6 +11,7 @@ const EXERCISES: [string, string[], "reps" | "seconds" | "meters", string][] = [
   ["Paused dips", ["paused dip", "pause dips", "tempo dips"], "reps", "bodyweight"],
   ["Push-ups", ["push up", "pushup", "press-up"], "reps", "bodyweight"],
   ["Inverted rows", ["inverted row", "bodyweight row"], "reps", "bodyweight"],
+  ["Seated single arm row", ["seated single-arm row", "single arm row", "seated row"], "reps", "external"],
   ["Straight-arm pulldown", ["straight arm pulldown"], "reps", "external"],
   ["Kneeling KB press", ["kneeling kettlebell press", "kb press"], "reps", "external"],
   ["Kettlebell Z press", ["kb z press", "z press", "kettlebell z press", "k bell z press"], "reps", "external"],
