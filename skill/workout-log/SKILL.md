@@ -19,10 +19,12 @@ description: >
    - `-Xkg` / "banded" / "assisted" → load_type `assisted`, load_value `-X`.
    - bare weight on a weighted movement (goblet / KB / landmine) → `external`, load_value `X`.
    - bodyweight / "BW" → `bodyweight`, load_value null.
+   - **load unspecified + no loaded history for that lift → default `bodyweight` (load_value null); don't re-confirm.** Only ask about a missing load when the lift normally carries external weight (has loaded history, or is a known weighted movement — goblet / KB / landmine / dumbbell).
    - holds in seconds → metric_type `seconds`; carries in metres → `meters`.
    - Also capture session-level **`rpe`** (1–10), **`feel`** (short "how it went / any niggles" note), and **`mu_note`** (answer to a muscle-up question — e.g. "could you get chest to bar?", "where did the rep break — pull or transition?"). **Prompt Julien for these** when logging — he'll forget otherwise. Include `rpe`, `feel`, `mu_note` (and `region`, `type` if known) in the POST body alongside `entries`.
-2. POST to `{WORKOUT_API_URL}/api/log` with header `Authorization: Bearer {WORKOUT_API_TOKEN}`.
-3. Show Julien the returned per-exercise lines, PR flags, and any `needs_confirmation`
+2. **Resolve novel lifts before sending.** While parsing, flag any exercise that looks genuinely new (not an obvious typo/variant of a known lift). Create it *first* — confirm with Julien, then `POST /api/exercise` — and only then assemble and send the `/api/log` call. Creating up front keeps logging to one clean call so a creation failure can't strand already-parsed set data. Step 4 stays as the fallback for anything that still comes back unmatched.
+3. POST to `{WORKOUT_API_URL}/api/log` with header `Authorization: Bearer {WORKOUT_API_TOKEN}`.
+4. Show Julien the returned per-exercise lines, PR flags, and any `needs_confirmation`
    exercises. **If an exercise is unmatched, ask before re-sending** — never invent one.
    - If Julien confirms it's a **typo or a variant of an existing lift**, re-send `/api/log`
      with the corrected/canonical name.
