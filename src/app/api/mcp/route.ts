@@ -69,9 +69,14 @@ const mcpHandler = createMcpHandler(
       },
     );
 
-    server.tool("get_prs", "Get the PR board.", {}, async () => {
-      return { content: [{ type: "text", text: JSON.stringify(await prBoard()) }] };
-    });
+    server.tool(
+      "get_prs",
+      "Get the PR board (key calisthenics only). Pass all:true to include every tracked lift — needed to autoregulate lower-body days, which aren't on the visual board.",
+      { all: z.boolean().optional() },
+      async ({ all }) => {
+        return { content: [{ type: "text", text: JSON.stringify(await prBoard(all ?? false)) }] };
+      },
+    );
 
     server.tool(
       "log_plan",

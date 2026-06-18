@@ -43,14 +43,15 @@ export async function stalledLifts(n = 3) {
   `) as unknown as Array<{ canonical_name: string; recent_best: number; sessions: number }>;
 }
 
-export async function prBoard() {
-  // Key lifts only — full roster always shown; un-logged ones come back null ("—").
+export async function prBoard(includeAll = false) {
+  // Default: key lifts only (the visual board). includeAll drops the filter so the
+  // generator can autoregulate off every tracked lift; un-logged ones come back null.
   return (await sql`
     select e.id as exercise_id, e.canonical_name,
            p.max_added_load, p.min_assist_load, p.max_metric
     from exercise e
     left join v_prs p on p.exercise_id = e.id
-    where e.is_key
+    ${includeAll ? sql`` : sql`where e.is_key`}
     order by e.canonical_name
   `) as unknown as Array<Record<string, unknown>>;
 }
