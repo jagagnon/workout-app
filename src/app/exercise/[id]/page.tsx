@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { exerciseProgression } from "../../../lib/progress";
-import { ProgressionChart } from "../../components/ProgressionChart";
+import { StimulusProgressionChart } from "../../components/StimulusProgressionChart";
 
 export const dynamic = "force-dynamic";
 
@@ -11,11 +11,16 @@ function fmtDate(d: unknown): string {
 export default async function ExercisePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const name = decodeURIComponent(id);
-  const raw = (await exerciseProgression(name)) as Array<{ date: unknown; metric_value: number; load_value: number | null }>;
+  const raw = (await exerciseProgression(name)) as Array<{
+    date: unknown; stimulus: string | null;
+    metric_value: number; metric_type: string; load_value: number | null;
+  }>;
   const data = raw.map((r) => ({
     label: fmtDate(r.date),
-    reps: Number(r.metric_value),
+    stimulus: r.stimulus,
     load: r.load_value == null ? null : Number(r.load_value),
+    metric: Number(r.metric_value),
+    metricType: r.metric_type,
   }));
 
   return (
@@ -27,8 +32,8 @@ export default async function ExercisePage({ params }: { params: Promise<{ id: s
         </div>
       </header>
       <section className="card rise" style={{ animationDelay: "70ms" }}>
-        <div className="card-title">Progression · reps &amp; load</div>
-        <ProgressionChart data={data} />
+        <div className="card-title">Progression · load by stimulus</div>
+        <StimulusProgressionChart data={data} />
       </section>
     </main>
   );

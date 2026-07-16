@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { muscleUpLadder, stalledLifts, prBoard, recentSessions } from "../lib/progress";
 import { formatLoad } from "../lib/load";
 import type { LoadType } from "../lib/types";
@@ -79,7 +80,10 @@ export default async function Home() {
 
       <div className="grid">
         <section className="card rise" style={{ animationDelay: "140ms" }}>
-          <div className="card-title">PR Board</div>
+          <div className="card-title-row">
+            <div className="card-title">PR Board</div>
+            <Link href="/prs" className="card-title-nav">All PRs &rarr;</Link>
+          </div>
           <PrBoard rows={prs} />
         </section>
 

@@ -2,13 +2,13 @@ import { sql } from "../db/client";
 
 export async function exerciseProgression(canonicalName: string) {
   return (await sql`
-    select s.date, e.metric_value, e.metric_type, e.load_type, e.load_value, e.load_unit, e.per_side
+    select s.date, s.type as stimulus, e.metric_value, e.metric_type, e.load_type, e.load_value, e.load_unit, e.per_side
     from entry e
     join session s on s.id = e.session_id
     join exercise x on x.id = e.exercise_id
     where x.canonical_name = ${canonicalName}
     order by s.date asc
-  `) as unknown as Array<{ date: string; metric_value: number; load_value: number | null }>;
+  `) as unknown as Array<{ date: string; stimulus: string | null; metric_value: number; load_value: number | null }>;
 }
 
 export async function muscleUpLadder() {
@@ -54,6 +54,30 @@ export async function prBoard(includeAll = false) {
     ${includeAll ? sql`` : sql`where e.is_key`}
     order by e.canonical_name
   `) as unknown as Array<Record<string, unknown>>;
+}
+
+export async function allExercisePrs() {
+  return (await sql`
+    with first_entry as (
+      select distinct on (e.exercise_id)
+        e.exercise_id, e.load_type, e.load_value, e.metric_value
+      from entry e
+      join session s on s.id = e.session_id
+      order by e.exercise_id, s.date asc, e.id asc
+    )
+    select
+      x.id as exercise_id, x.canonical_name,
+      f.load_type as start_load_type, f.load_value as start_load_value, f.metric_value as start_metric,
+      p.max_added_load, p.min_assist_load, p.max_metric
+    from exercise x
+    join first_entry f on f.exercise_id = x.id
+    left join v_prs p on p.exercise_id = x.id
+    order by x.canonical_name
+  `) as unknown as Array<{
+    exercise_id: number; canonical_name: string;
+    start_load_type: string; start_load_value: number | null; start_metric: number;
+    max_added_load: number | null; min_assist_load: number | null; max_metric: number | null;
+  }>;
 }
 
 export async function recentActuals(region: "U" | "L", limit = 4) {

@@ -45,6 +45,7 @@ New component, same file location pattern as `LadderChart`/`ProgressionChart`. P
 - Render a tab strip with only the stimulus types that have ≥1 data point for this exercise.
 - Default active tab = the stimulus type of the most recent entry.
 - Each tab renders a single-line load chart, visually modeled on `LadderChart` (area+line, no dual axis) rather than the current `ComposedChart`.
+- **Bodyweight fallback:** several exercises (holds like L-sit, front lever tuck; some bodyweight reps lifts) never have a `load_value` at all. A tab with zero load values across its entries falls back to plotting `metric_value` (reps/seconds) instead of going blank — load stays primary whenever any load data exists in the tab.
 - Empty state unchanged in spirit: "No sessions logged for this lift yet" if there's no data at all.
 
 `ProgressionChart.tsx` is deleted (fully replaced, not kept side by side) since nothing else uses it.
