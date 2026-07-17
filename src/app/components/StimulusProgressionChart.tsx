@@ -3,10 +3,10 @@ import { useState } from "react";
 import {
   AreaChart, Area, Line, XAxis, YAxis, Tooltip, ResponsiveContainer,
 } from "recharts";
+import { STIMULI } from "../../lib/types";
 
-type Pt = { label: string; stimulus: string | null; load: number | null; metric: number; metricType: string };
+type Pt = { t: number; label: string; stimulus: string | null; load: number | null; metric: number; metricType: string };
 
-const STIMULI = ["Strength", "Hypertrophy", "Volume"] as const;
 const OTHER = "Other";
 
 const METRIC_UNIT: Record<string, string> = { reps: "", seconds: "s", meters: "m" };
@@ -35,8 +35,11 @@ function MetricTip({ active, payload, unit }: { active?: boolean; payload?: Arra
   );
 }
 
+const fmtTick = (t: number) =>
+  new Intl.DateTimeFormat("en-GB", { day: "2-digit", month: "short" }).format(new Date(t));
+
 function MiniChart({ data, tickFormatter, tooltip }: {
-  data: Array<{ label: string; v: number }>;
+  data: Array<{ t: number; label: string; v: number }>;
   tickFormatter: (v: number) => string;
   tooltip: React.ReactElement;
 }) {
@@ -54,7 +57,19 @@ function MiniChart({ data, tickFormatter, tooltip }: {
             <stop offset="100%" stopColor="#ff5a1f" stopOpacity={0} />
           </linearGradient>
         </defs>
-        <XAxis dataKey="label" tickLine={false} axisLine={{ stroke: "#26262f" }} minTickGap={24} padding={{ left: 20, right: 20 }} />
+        {/* Spaced by real elapsed time, so training gaps are visible rather than flattened. */}
+        <XAxis
+          dataKey="t"
+          type="number"
+          scale="time"
+          domain={["dataMin", "dataMax"]}
+          ticks={data.map((d) => d.t)}
+          tickFormatter={fmtTick}
+          tickLine={false}
+          axisLine={{ stroke: "#26262f" }}
+          minTickGap={24}
+          padding={{ left: 20, right: 20 }}
+        />
         <YAxis domain={[min, max]} ticks={ticks} tickFormatter={tickFormatter} tickLine={false} axisLine={false} width={56} allowDecimals={false} interval={0} />
         <Tooltip content={tooltip} cursor={{ stroke: "#3a3a47" }} />
         <Area type="monotone" dataKey="v" stroke="none" fill="url(#stimFill)" isAnimationActive={false} />
@@ -75,11 +90,11 @@ function MiniChart({ data, tickFormatter, tooltip }: {
 function StimulusTab({ data }: { data: Pt[] }) {
   const hasLoad = data.some((d) => d.load != null);
   if (hasLoad) {
-    const chartData = data.filter((d) => d.load != null).map((d) => ({ label: d.label, v: d.load as number }));
+    const chartData = data.filter((d) => d.load != null).map((d) => ({ t: d.t, label: d.label, v: d.load as number }));
     return <MiniChart data={chartData} tickFormatter={(v) => `${v}kg`} tooltip={<LoadTip />} />;
   }
   const unit = METRIC_UNIT[data[0]?.metricType] ?? "";
-  const chartData = data.map((d) => ({ label: d.label, v: d.metric }));
+  const chartData = data.map((d) => ({ t: d.t, label: d.label, v: d.metric }));
   return <MiniChart data={chartData} tickFormatter={(v) => `${v}${unit}`} tooltip={<MetricTip unit={unit} />} />;
 }
 
