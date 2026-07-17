@@ -1,9 +1,8 @@
 import Link from "next/link";
-import { muscleUpLadder, stalledLifts, prBoard, recentSessions } from "../lib/progress";
+import { muscleUpLadder, prBoard, recentSessions } from "../lib/progress";
 import { formatLoad } from "../lib/load";
 import type { LoadType } from "../lib/types";
 import { LadderChart } from "./components/LadderChart";
-import { StalledList } from "./components/StalledList";
 import { PrBoard } from "./components/PrBoard";
 
 export const dynamic = "force-dynamic";
@@ -15,8 +14,8 @@ function fmtDate(d: unknown): string {
 }
 
 export default async function Home() {
-  const [ladderRaw, stalled, prs, sessions] = await Promise.all([
-    muscleUpLadder(), stalledLifts(), prBoard(), recentSessions(8),
+  const [ladderRaw, prs, sessions] = await Promise.all([
+    muscleUpLadder(), prBoard(), recentSessions(8),
   ]);
 
   const ladder = (ladderRaw as Array<{ date: unknown; load_value: number | null }>)
@@ -24,8 +23,6 @@ export default async function Home() {
     .map((r) => ({ label: fmtDate(r.date), kg: Number(r.load_value) }));
 
   const currentKg = ladder.length ? ladder[ladder.length - 1].kg : null;
-  const firstKg = ladder.length ? ladder[0].kg : null;
-  const shed = currentKg != null && firstKg != null ? currentKg - firstKg : null;
 
   const days = Math.max(0, Math.ceil((GOAL.getTime() - Date.now()) / 86_400_000));
 
@@ -64,14 +61,6 @@ export default async function Home() {
             </div>
             <div className="sub">{assistSub}</div>
           </div>
-          <div className="hero-stat">
-            <div className="label">Assist shed</div>
-            <div className="value">
-              {shed != null && shed > 0 ? shed : "—"}
-              {shed != null && shed > 0 && <small>KG</small>}
-            </div>
-            <div className="sub">{ladder.length ? `since ${ladder[0].label}` : "log to begin"}</div>
-          </div>
         </div>
         <div className="hero-chart">
           <LadderChart data={ladder} />
@@ -87,12 +76,7 @@ export default async function Home() {
           <PrBoard rows={prs} />
         </section>
 
-        <section className="card rise" style={{ animationDelay: "210ms" }}>
-          <div className="card-title">Stalled Lifts</div>
-          <StalledList rows={stalled as { canonical_name: string; recent_best: number; sessions: number }[]} />
-        </section>
-
-        <section className="card span2 rise" style={{ animationDelay: "280ms" }}>
+        <section className="card span2 rise" style={{ animationDelay: "210ms" }}>
           <div className="card-title">Recent Sessions</div>
           {sess.length === 0 ? (
             <div className="empty">No sessions yet. Say &ldquo;log my session&rdquo; to Claude and refresh.</div>

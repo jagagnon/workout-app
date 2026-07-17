@@ -4,6 +4,13 @@ import { StimulusProgressionChart } from "../../components/StimulusProgressionCh
 
 export const dynamic = "force-dynamic";
 
+// Only the calisthenics compound lifts get weight/assist adjusted per stimulus —
+// everything else is worked for 8-10 reps/set regardless, so a stimulus split adds no signal.
+const CALI_EXERCISES = new Set([
+  "Pull-ups", "Chin-ups", "Chest-to-bar pull-up", "High pulls",
+  "Dips", "Paused dips", "Muscle-up",
+]);
+
 function fmtDate(d: unknown): string {
   return new Intl.DateTimeFormat("en-GB", { day: "2-digit", month: "short" }).format(new Date(d as string));
 }
@@ -22,6 +29,8 @@ export default async function ExercisePage({ params }: { params: Promise<{ id: s
     metric: Number(r.metric_value),
     metricType: r.metric_type,
   }));
+  const hasAnyLoad = data.some((d) => d.load != null);
+  const splitByStimulus = CALI_EXERCISES.has(name) && hasAnyLoad;
 
   return (
     <main className="wrap">
@@ -32,8 +41,8 @@ export default async function ExercisePage({ params }: { params: Promise<{ id: s
         </div>
       </header>
       <section className="card rise" style={{ animationDelay: "70ms" }}>
-        <div className="card-title">Progression · load by stimulus</div>
-        <StimulusProgressionChart data={data} />
+        <div className="card-title">{splitByStimulus ? "Progression · load by stimulus" : "Progression"}</div>
+        <StimulusProgressionChart data={data} splitByStimulus={splitByStimulus} />
       </section>
     </main>
   );

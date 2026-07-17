@@ -54,7 +54,7 @@ function MiniChart({ data, tickFormatter, tooltip }: {
             <stop offset="100%" stopColor="#ff5a1f" stopOpacity={0} />
           </linearGradient>
         </defs>
-        <XAxis dataKey="label" tickLine={false} axisLine={{ stroke: "#26262f" }} minTickGap={24} />
+        <XAxis dataKey="label" tickLine={false} axisLine={{ stroke: "#26262f" }} minTickGap={24} padding={{ left: 20, right: 20 }} />
         <YAxis domain={[min, max]} ticks={ticks} tickFormatter={tickFormatter} tickLine={false} axisLine={false} width={56} allowDecimals={false} interval={0} />
         <Tooltip content={tooltip} cursor={{ stroke: "#3a3a47" }} />
         <Area type="monotone" dataKey="v" stroke="none" fill="url(#stimFill)" isAnimationActive={false} />
@@ -83,7 +83,7 @@ function StimulusTab({ data }: { data: Pt[] }) {
   return <MiniChart data={chartData} tickFormatter={(v) => `${v}${unit}`} tooltip={<MetricTip unit={unit} />} />;
 }
 
-export function StimulusProgressionChart({ data }: { data: Pt[] }) {
+export function StimulusProgressionChart({ data, splitByStimulus }: { data: Pt[]; splitByStimulus: boolean }) {
   const order: string[] = [...STIMULI, OTHER];
   const groups = new Map<string, Pt[]>();
   for (const d of data) {
@@ -98,6 +98,11 @@ export function StimulusProgressionChart({ data }: { data: Pt[] }) {
 
   if (!data.length) {
     return <div className="empty center">No sessions logged for this lift yet.</div>;
+  }
+
+  if (!splitByStimulus) {
+    // Accessory/isolation work: reps stay ~fixed regardless of stimulus, so a split adds no signal.
+    return <StimulusTab data={data} />;
   }
 
   const activeTab = tabs.includes(active) ? active : tabs[0];

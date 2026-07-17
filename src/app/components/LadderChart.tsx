@@ -36,7 +36,7 @@ export function LadderChart({ data }: { data: Pt[] }) {
             <stop offset="100%" stopColor="#ff5a1f" stopOpacity={0} />
           </linearGradient>
         </defs>
-        <XAxis dataKey="label" tickLine={false} axisLine={{ stroke: "#26262f" }} minTickGap={24} />
+        <XAxis dataKey="label" tickLine={false} axisLine={{ stroke: "#26262f" }} minTickGap={24} padding={{ left: 20, right: 20 }} />
         <YAxis domain={[min, max]} ticks={ticks} tickFormatter={(v) => `${v}kg`} tickLine={false} axisLine={false} width={56} allowDecimals={false} interval={0} />
         <ReferenceLine
           y={0}
