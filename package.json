@@ -11,7 +11,8 @@
     "db:schema": "psql \"$DATABASE_URL\" -f src/db/schema.sql",
     "db:seed": "tsx --env-file=.env.local src/db/seed-exercises.ts",
     "db:migrate-prs": "tsx --env-file=.env.local src/db/migrate-prs.ts",
-    "db:seed-plans": "tsx --env-file=.env.local src/db/seed-plans.ts"
+    "db:seed-plans": "tsx --env-file=.env.local src/db/seed-plans.ts",
+    "ingest:coros": "tsx --env-file=.env.local src/ingest/coros.ts"
   },
   "dependencies": {
     "mcp-handler": "^1.1.0",

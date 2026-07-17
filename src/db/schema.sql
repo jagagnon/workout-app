@@ -66,3 +66,27 @@ create index if not exists plan_region_date on plan (region, date desc);
 alter table session add column if not exists rpe      smallint check (rpe between 1 and 10);
 alter table session add column if not exists feel     text;
 alter table session add column if not exists mu_note  text;
+
+-- Endurance/cardio activities ingested from COROS Training Hub (reverse-engineered
+-- teamapi.coros.com API). raw holds the full COROS object so no data is ever lost;
+-- the flat columns are best-effort normalizations that can be re-derived from raw.
+create table if not exists activity (
+  id             serial primary key,
+  coros_label_id text not null unique,          -- COROS labelId — dedup / upsert key
+  sport_type     integer not null,              -- raw COROS sportType code
+  sport          text not null default 'other', -- normalized: run | trail_run | bike | swim | other
+  start_time     timestamptz not null,
+  name           text,
+  distance_m     numeric,                        -- meters
+  duration_s     integer,                        -- total time, seconds
+  avg_pace_s_km  numeric,                        -- seconds per km (derived)
+  avg_hr         integer,
+  max_hr         integer,
+  calories       numeric,                        -- kcal
+  training_load  numeric,
+  elevation_m    numeric,                        -- total ascent, meters
+  raw            jsonb not null,
+  created_at     timestamptz not null default now()
+);
+create index if not exists activity_sport_start on activity (sport, start_time desc);
+create index if not exists activity_start on activity (start_time desc);
