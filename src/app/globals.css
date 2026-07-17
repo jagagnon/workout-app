@@ -280,10 +280,27 @@ a { color: inherit; text-decoration: none; }
   font-family: var(--font-mono);
   font-size: 11px;
   color: var(--text-faint);
-  margin-top: 14px;
-  padding-top: 12px;
-  border-top: 1px solid var(--line);
+  margin-top: 12px;
   letter-spacing: 0.02em;
+}
+.stat-meta {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-dim);
+}
+.stat-meta .meta-k {
+  display: inline-block;
+  width: 60px;
+  color: var(--text-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 9px;
 }
 
 /* ---- panel grid ---- */
@@ -472,15 +489,30 @@ a { color: inherit; text-decoration: none; }
 /* ---- pr dumbbell chart ---- */
 .pr-section { margin-bottom: 24px; }
 .pr-section:last-child { margin-bottom: 0; }
+.pr-section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 8px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid var(--line);
+}
 .pr-section-title {
   font-family: var(--font-mono);
   font-size: 10.5px;
   letter-spacing: 0.2em;
   text-transform: uppercase;
   color: var(--text-dim);
-  padding-bottom: 9px;
-  margin-bottom: 4px;
-  border-bottom: 1px solid var(--line);
+}
+/* Each section's axis runs in the same direction; the caption names the unit and
+   which way is better, since the tracks themselves carry no ticks. */
+.pr-section-caption {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  color: var(--text-faint);
+  text-align: right;
 }
 .pr-row {
   display: flex;
@@ -500,6 +532,16 @@ a { color: inherit; text-decoration: none; }
   transition: color 0.15s ease;
 }
 .pr-name:hover { color: var(--accent); }
+.pr-name.key::before {
+  content: "";
+  display: inline-block;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--accent);
+  margin-right: 6px;
+  vertical-align: middle;
+}
 .pr-track {
   position: relative;
   flex: 1;

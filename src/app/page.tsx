@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { muscleUpLadder, prBoard, recentSessions } from "../lib/progress";
+import { muscleUpContext, muscleUpLadder, prBoard, recentSessions } from "../lib/progress";
 import { formatLoad } from "../lib/load";
 import type { LoadType } from "../lib/types";
 import { LadderChart } from "./components/LadderChart";
@@ -15,15 +15,21 @@ function fmtDate(d: unknown): string {
 }
 
 export default async function Home() {
-  const [ladderRaw, prs, sessions] = await Promise.all([
-    muscleUpLadder(), prBoard(), recentSessions(8),
+  const [ladderRaw, prs, sessions, muCtx] = await Promise.all([
+    muscleUpLadder(), prBoard(), recentSessions(8), muscleUpContext(),
   ]);
 
-  const ladder = (ladderRaw as Array<{ date: unknown; load_value: number | null }>)
+  const ladder = (ladderRaw as Array<{ date: unknown; load_value: number | null; metric_value: number }>)
     .filter((r) => r.load_value != null)
-    .map((r) => ({ label: fmtDate(r.date), kg: Number(r.load_value) }));
+    .map((r) => ({
+      t: new Date(r.date as string).getTime(),
+      label: fmtDate(r.date),
+      kg: Number(r.load_value),
+      reps: Number(r.metric_value),
+    }));
 
-  const currentKg = ladder.length ? ladder[ladder.length - 1].kg : null;
+  const last = ladder.length ? ladder[ladder.length - 1] : null;
+  const currentKg = last ? last.kg : null;
 
   const days = Math.max(0, Math.ceil((GOAL.getTime() - Date.now()) / 86_400_000));
   const elapsed = Math.min(1, Math.max(0,
@@ -34,6 +40,13 @@ export default async function Home() {
     : currentKg < 0 ? `${Math.abs(currentKg)} kg from a clean rep`
     : currentKg === 0 ? "bodyweight reached — ascend"
     : `+${currentKg} kg weighted`;
+
+  // The ladder only moves when a muscle-up is logged, so the headline number can sit
+  // still while training continues. Say when it was set, and what has happened since.
+  const staleNote =
+    muCtx.upper_since > 0
+      ? ` · ${muCtx.upper_since} upper session${muCtx.upper_since === 1 ? "" : "s"} since`
+      : " · latest session";
 
   const sess = sessions as Array<{
     id: number; date: unknown; region: string | null; type: string | null;
@@ -72,6 +85,12 @@ export default async function Home() {
             {currentKg != null && <small>KG</small>}
           </div>
           <div className="stat-sub">{assistSub}</div>
+          {last && (
+            <div className="stat-meta">
+              <div><span className="meta-k">best set</span>{last.reps} {last.reps === 1 ? "rep" : "reps"} at this assist</div>
+              <div><span className="meta-k">as of</span>{fmtDate(muCtx.last_date)}{staleNote}</div>
+            </div>
+          )}
         </section>
 
         <section className="card rise" style={{ animationDelay: "210ms" }}>

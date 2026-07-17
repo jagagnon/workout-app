@@ -14,13 +14,25 @@ after(async () => {
 });
 
 test("logs a session and returns PR for first-ever load", async () => {
+  // Pick a lift that has never been loaded, so "first-ever load is a PR" stays true
+  // however far Julien's real numbers move. Hardcoding "Chin-ups @ 10kg" broke the
+  // day he pulled 12.5.
+  const [fresh] = await sql`
+    select x.canonical_name from exercise x
+    where not exists (
+      select 1 from entry e
+      where e.exercise_id = x.id and e.load_type in ('added','external')
+    )
+    order by x.id limit 1
+  `;
+  const name = fresh.canonical_name as string;
   const res = await logWorkout({
     date: "2099-01-01", region: "U", type: "Strength",
-    entries: [{ exercise: "Chin-ups", metric: 5, load_type: "added", load_value: 10 }],
+    entries: [{ exercise: name, metric: 5, load_type: "added", load_value: 2.5 }],
   });
-  const chin = res.results.find((r) => r.canonical_name === "Chin-ups")!;
-  assert.equal(chin.resolution, "exact");
-  assert.equal(chin.is_pr, true);
+  const r = res.results.find((x) => x.canonical_name === name)!;
+  assert.equal(r.resolution, "exact");
+  assert.equal(r.is_pr, true);
 });
 
 test("re-logging same exercise same day overwrites (idempotent)", async () => {
@@ -43,9 +55,17 @@ test("unmatched exercise returns needs_confirmation and is NOT written", async (
 });
 
 test("fuzzy match is NOT auto-written (needs confirmation)", async () => {
+  // Build the near-miss from a real name (last character doubled, as a typo would)
+  // so it stays fuzzy as the registry grows. "Ring muscle-up row" was hardcoded here
+  // as a fuzzy miss and quietly became an exact match once it was added as a lift.
+  const [ex] = await sql`
+    select canonical_name from exercise where length(canonical_name) >= 12 order by id limit 1
+  `;
+  const real = ex.canonical_name as string;
+  const typo = real + real.slice(-1);
   const res = await logWorkout({ date: "2099-01-01", region: "U",
-    entries: [{ exercise: "Ring muscle-up row", metric: 5, load_type: "bodyweight" }] });
-  const r = res.results.find((x) => x.input.exercise === "Ring muscle-up row")!;
-  assert.equal(r.written, false);
+    entries: [{ exercise: typo, metric: 5, load_type: "bodyweight" }] });
+  const r = res.results.find((x) => x.input.exercise === typo)!;
   assert.equal(r.resolution, "needs_confirmation");
+  assert.equal(r.written, false);
 });

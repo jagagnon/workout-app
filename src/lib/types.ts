@@ -1,6 +1,9 @@
 export type LoadType = "added" | "assisted" | "external" | "bodyweight";
 export type MetricType = "reps" | "seconds" | "meters";
 
+export const STIMULI = ["Strength", "Hypertrophy", "Volume"] as const;
+export type Stimulus = (typeof STIMULI)[number];
+
 export interface EntryInput {
   exercise: string;
   metric: number;

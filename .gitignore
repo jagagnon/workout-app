@@ -45,3 +45,7 @@ next-env.d.ts
 
 # deploy secrets
 DEPLOY_SECRETS.local.txt
+
+# playwright
+/test-results
+/playwright-report
