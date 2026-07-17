@@ -311,7 +311,7 @@ a { color: inherit; text-decoration: none; }
 }
 .card-title-nav:hover { color: var(--accent); }
 
-/* ---- pr trend chart ---- */
+/* ---- pr dumbbell chart ---- */
 .pr-section { margin-bottom: 22px; }
 .pr-section:last-child { margin-bottom: 0; }
 .pr-section-title {
@@ -340,20 +340,42 @@ a { color: inherit; text-decoration: none; }
   transition: color 0.15s ease;
 }
 .pr-name:hover { color: var(--accent); }
-.pr-spark { flex: 1; height: 40px; }
+.pr-track {
+  position: relative;
+  flex: 1;
+  height: 42px;
+}
+.pr-connector {
+  position: absolute;
+  top: 50%;
+  height: 2px;
+  background: var(--line-bright);
+  transform: translateY(-50%);
+}
+.pr-dot {
+  position: absolute;
+  top: 50%;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+.pr-dot.start { background: var(--text-dim); }
+.pr-dot.current { background: var(--accent); box-shadow: 0 0 8px var(--accent-glow); }
+.pr-val {
+  position: absolute;
+  transform: translateX(-50%);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  white-space: nowrap;
+}
+.pr-val.start { top: 0; color: var(--text-faint); }
+.pr-val.current { bottom: 0; color: var(--accent); }
+.pr-spark { width: 90px; flex-shrink: 0; height: 36px; }
 .pr-spark-flat {
   height: 2px;
-  margin-top: 19px;
+  margin-top: 17px;
   background: var(--line-bright);
-}
-.pr-current {
-  width: 64px;
-  flex-shrink: 0;
-  text-align: right;
-  font-family: var(--font-mono);
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--accent);
 }
 
 /* ---- empty states ---- */

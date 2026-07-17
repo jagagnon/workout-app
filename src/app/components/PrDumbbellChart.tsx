@@ -16,20 +16,38 @@ type PrRow = {
   history: HistoryPoint[];
 };
 
+type Dumbbell = {
+  exercise_id: number; canonical_name: string; start: number; current: number; history: HistoryPoint[];
+};
+
 const SECTIONS: {
   key: string;
   title: string;
+  invert: boolean;
   match: (t: string) => boolean;
   fmt: (v: number) => string;
 }[] = [
-  { key: "assisted", title: "Assisted", match: (t) => t === "assisted", fmt: (v) => `${v}kg` },
+  {
+    key: "assisted",
+    title: "Assisted",
+    invert: true,
+    match: (t) => t === "assisted",
+    fmt: (v) => `${v}kg`,
+  },
   {
     key: "added",
     title: "Added / External",
+    invert: false,
     match: (t) => t === "added" || t === "external",
     fmt: (v) => (v > 0 ? `+${v}kg` : `${v}kg`),
   },
-  { key: "bodyweight", title: "Bodyweight Reps", match: (t) => t === "bodyweight", fmt: (v) => `${v}` },
+  {
+    key: "bodyweight",
+    title: "Bodyweight Reps",
+    invert: false,
+    match: (t) => t === "bodyweight",
+    fmt: (v) => `${v}`,
+  },
 ];
 
 function currentFor(row: PrRow, key: string, start: number): number {
@@ -40,6 +58,15 @@ function currentFor(row: PrRow, key: string, start: number): number {
 
 function fmtDate(d: string): string {
   return new Intl.DateTimeFormat("en-GB", { day: "2-digit", month: "short" }).format(new Date(d));
+}
+
+function seriesFor(history: HistoryPoint[], sectionKey: string): Array<{ label: string; v: number }> {
+  return history
+    .map((h) => ({
+      label: fmtDate(h.date),
+      v: sectionKey === "bodyweight" ? Number(h.metric_value) : h.load_value == null ? null : Number(h.load_value),
+    }))
+    .filter((d): d is { label: string; v: number } => d.v != null);
 }
 
 function Tip({
@@ -57,7 +84,7 @@ function Tip({
 
 function Sparkline({ data, fmt }: { data: Array<{ label: string; v: number }>; fmt: (v: number) => string }) {
   return (
-    <ResponsiveContainer width="100%" height={40}>
+    <ResponsiveContainer width="100%" height={36}>
       <AreaChart data={data} margin={{ top: 4, right: 2, bottom: 2, left: 2 }}>
         <defs>
           <linearGradient id="prSpark" x1="0" y1="0" x2="0" y2="1">
@@ -73,7 +100,7 @@ function Sparkline({ data, fmt }: { data: Array<{ label: string; v: number }>; f
           stroke="#ff5a1f"
           strokeWidth={2}
           dot={false}
-          activeDot={{ r: 4, fill: "#ff5a1f", stroke: "#0a0a0c", strokeWidth: 1.5 }}
+          activeDot={{ r: 3.5, fill: "#ff5a1f", stroke: "#0a0a0c", strokeWidth: 1.5 }}
           isAnimationActive={false}
         />
       </AreaChart>
@@ -81,36 +108,57 @@ function Sparkline({ data, fmt }: { data: Array<{ label: string; v: number }>; f
   );
 }
 
-function TrendRow({ row, sectionKey, fmt }: { row: PrRow; sectionKey: string; fmt: (v: number) => string }) {
-  const start = sectionKey === "bodyweight" ? Number(row.start_metric) : Number(row.start_load_value);
-  const current = currentFor(row, sectionKey, start);
-  const data = row.history
-    .map((h) => ({
-      label: fmtDate(h.date),
-      v: sectionKey === "bodyweight" ? Number(h.metric_value) : h.load_value == null ? null : Number(h.load_value),
-    }))
-    .filter((d): d is { label: string; v: number } => d.v != null);
+function DumbbellRow({
+  d, min, max, invert, fmt, sectionKey,
+}: { d: Dumbbell; min: number; max: number; invert: boolean; fmt: (v: number) => string; sectionKey: string }) {
+  const pct = (v: number) => {
+    const raw = min === max ? 50 : ((v - min) / (max - min)) * 100;
+    return invert ? 100 - raw : raw;
+  };
+  const startPct = pct(d.start);
+  const currentPct = pct(d.current);
+  const lo = Math.min(startPct, currentPct);
+  const hi = Math.max(startPct, currentPct);
+  const spark = seriesFor(d.history, sectionKey);
 
   return (
     <div className="pr-row">
-      <Link href={`/exercise/${encodeURIComponent(row.canonical_name)}`} className="pr-name">
-        {row.canonical_name}
+      <Link href={`/exercise/${encodeURIComponent(d.canonical_name)}`} className="pr-name">
+        {d.canonical_name}
       </Link>
-      <div className="pr-spark">
-        {data.length > 1 ? <Sparkline data={data} fmt={fmt} /> : <div className="pr-spark-flat" />}
+      <div className="pr-track">
+        <div className="pr-connector" style={{ left: `${lo}%`, width: `${hi - lo}%` }} />
+        <div className="pr-dot start" style={{ left: `${startPct}%` }} />
+        <div className="pr-dot current" style={{ left: `${currentPct}%` }} />
+        <div className="pr-val start" style={{ left: `${startPct}%` }}>{fmt(d.start)}</div>
+        <div className="pr-val current" style={{ left: `${currentPct}%` }}>{fmt(d.current)}</div>
       </div>
-      <div className="pr-current">{fmt(current)}</div>
+      <div className="pr-spark">
+        {spark.length > 1 ? <Sparkline data={spark} fmt={fmt} /> : <div className="pr-spark-flat" />}
+      </div>
     </div>
   );
 }
 
-export function PrTrendChart({ rows }: { rows: PrRow[] }) {
+export function PrDumbbellChart({ rows }: { rows: PrRow[] }) {
   if (!rows.length) return <div className="empty">No PRs yet — log a session to start tracking.</div>;
 
   const sections = SECTIONS.map((s) => {
-    const matched = rows.filter((r) => s.match(r.start_load_type));
-    if (!matched.length) return null;
-    return { ...s, rows: matched };
+    const dumbbells: Dumbbell[] = rows
+      .filter((r) => s.match(r.start_load_type))
+      .map((r) => {
+        const start = s.key === "bodyweight" ? Number(r.start_metric) : Number(r.start_load_value);
+        return {
+          exercise_id: r.exercise_id,
+          canonical_name: r.canonical_name,
+          start,
+          current: currentFor(r, s.key, start),
+          history: r.history,
+        };
+      });
+    if (!dumbbells.length) return null;
+    const vals = dumbbells.flatMap((d) => [d.start, d.current]);
+    return { ...s, dumbbells, min: Math.min(...vals), max: Math.max(...vals) };
   }).filter((s): s is NonNullable<typeof s> => s != null);
 
   return (
@@ -118,8 +166,8 @@ export function PrTrendChart({ rows }: { rows: PrRow[] }) {
       {sections.map((s) => (
         <div className="pr-section" key={s.key}>
           <div className="pr-section-title">{s.title}</div>
-          {s.rows.map((r) => (
-            <TrendRow key={r.exercise_id} row={r} sectionKey={s.key} fmt={s.fmt} />
+          {s.dumbbells.map((d) => (
+            <DumbbellRow key={d.exercise_id} d={d} min={s.min} max={s.max} invert={s.invert} fmt={s.fmt} sectionKey={s.key} />
           ))}
         </div>
       ))}
