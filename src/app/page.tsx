@@ -52,23 +52,22 @@ export default async function Home() {
       </header>
 
       <section className="card hero rise" style={{ animationDelay: "70ms" }}>
-        <div className="hero-head">
-          <div className="hero-stat">
-            <div className="label">Current assist</div>
-            <div className="value accent">
-              {currentKg == null ? "—" : Math.abs(currentKg)}
-              {currentKg != null && <small>KG</small>}
-            </div>
-            <div className="sub">{assistSub}</div>
-          </div>
-        </div>
         <div className="hero-chart">
           <LadderChart data={ladder} />
         </div>
       </section>
 
       <div className="grid">
-        <section className="card rise" style={{ animationDelay: "140ms" }}>
+        <section className="card stat-card rise" style={{ animationDelay: "140ms" }}>
+          <div className="card-title">Current Assist</div>
+          <div className="stat-value accent">
+            {currentKg == null ? "—" : Math.abs(currentKg)}
+            {currentKg != null && <small>KG</small>}
+          </div>
+          <div className="stat-sub">{assistSub}</div>
+        </section>
+
+        <section className="card rise" style={{ animationDelay: "210ms" }}>
           <div className="card-title-row">
             <div className="card-title">PR Board</div>
             <Link href="/prs" className="card-title-nav">All PRs &rarr;</Link>
@@ -76,7 +75,7 @@ export default async function Home() {
           <PrBoard rows={prs} />
         </section>
 
-        <section className="card span2 rise" style={{ animationDelay: "210ms" }}>
+        <section className="card span2 rise" style={{ animationDelay: "280ms" }}>
           <div className="card-title">Recent Sessions</div>
           {sess.length === 0 ? (
             <div className="empty">No sessions yet. Say &ldquo;log my session&rdquo; to Claude and refresh.</div>

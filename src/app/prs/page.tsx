@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { allExercisePrs } from "../../lib/progress";
-import { PrDumbbellChart } from "../components/PrDumbbellChart";
+import { PrTrendChart } from "../components/PrTrendChart";
 
 export const dynamic = "force-dynamic";
 
@@ -16,7 +16,7 @@ export default async function PrsPage() {
         </div>
       </header>
       <section className="card rise" style={{ animationDelay: "70ms" }}>
-        <PrDumbbellChart rows={rows} />
+        <PrTrendChart rows={rows} />
       </section>
     </main>
   );

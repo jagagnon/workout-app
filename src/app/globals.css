@@ -141,45 +141,29 @@ a { color: inherit; text-decoration: none; }
 
 /* ---- hero ---- */
 .hero { padding: 0; }
-.hero-head {
-  display: flex;
-  align-items: stretch;
-  border-bottom: 1px solid var(--line);
-}
-.hero-stat {
-  padding: 22px 24px;
-  flex: 1;
-}
-.hero-stat + .hero-stat { border-left: 1px solid var(--line); }
-.hero-stat .label {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--text-dim);
-  margin-bottom: 10px;
-}
-.hero-stat .value {
+.hero-chart { padding: 16px 12px 8px; }
+
+/* ---- stat card ---- */
+.stat-value {
   font-family: var(--font-display);
-  font-size: clamp(40px, 11vw, 72px);
+  font-size: clamp(40px, 11vw, 60px);
   line-height: 0.85;
   letter-spacing: 0.01em;
 }
-.hero-stat .value.accent { color: var(--accent); }
-.hero-stat .value small {
+.stat-value.accent { color: var(--accent); }
+.stat-value small {
   font-family: var(--font-mono);
   font-size: 0.26em;
   letter-spacing: 0.05em;
   color: var(--text-dim);
   margin-left: 6px;
 }
-.hero-stat .sub {
+.stat-sub {
   font-family: var(--font-mono);
   font-size: 11px;
   color: var(--text-faint);
   margin-top: 10px;
 }
-.hero-chart { padding: 16px 12px 8px; }
 
 /* ---- panel grid ---- */
 .grid {
@@ -191,8 +175,6 @@ a { color: inherit; text-decoration: none; }
 .grid > .span2 { grid-column: 1 / -1; }
 @media (max-width: 680px) {
   .grid { grid-template-columns: 1fr; }
-  .hero-head { flex-direction: column; }
-  .hero-stat + .hero-stat { border-left: none; border-top: 1px solid var(--line); }
 }
 
 /* ---- PR leaderboard ---- */
@@ -329,7 +311,7 @@ a { color: inherit; text-decoration: none; }
 }
 .card-title-nav:hover { color: var(--accent); }
 
-/* ---- pr dumbbell chart ---- */
+/* ---- pr trend chart ---- */
 .pr-section { margin-bottom: 22px; }
 .pr-section:last-child { margin-bottom: 0; }
 .pr-section-title {
@@ -358,37 +340,21 @@ a { color: inherit; text-decoration: none; }
   transition: color 0.15s ease;
 }
 .pr-name:hover { color: var(--accent); }
-.pr-track {
-  position: relative;
-  flex: 1;
-  height: 42px;
-}
-.pr-connector {
-  position: absolute;
-  top: 50%;
+.pr-spark { flex: 1; height: 40px; }
+.pr-spark-flat {
   height: 2px;
+  margin-top: 19px;
   background: var(--line-bright);
-  transform: translateY(-50%);
 }
-.pr-dot {
-  position: absolute;
-  top: 50%;
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-}
-.pr-dot.start { background: var(--text-dim); }
-.pr-dot.current { background: var(--accent); box-shadow: 0 0 8px var(--accent-glow); }
-.pr-val {
-  position: absolute;
-  transform: translateX(-50%);
+.pr-current {
+  width: 64px;
+  flex-shrink: 0;
+  text-align: right;
   font-family: var(--font-mono);
-  font-size: 10px;
-  white-space: nowrap;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent);
 }
-.pr-val.start { top: 0; color: var(--text-faint); }
-.pr-val.current { bottom: 0; color: var(--accent); }
 
 /* ---- empty states ---- */
 .empty {

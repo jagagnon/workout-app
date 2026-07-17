@@ -64,19 +64,31 @@ export async function allExercisePrs() {
       from entry e
       join session s on s.id = e.session_id
       order by e.exercise_id, s.date asc, e.id asc
+    ),
+    history as (
+      select e.exercise_id,
+             json_agg(json_build_object(
+               'date', s.date, 'load_value', e.load_value, 'metric_value', e.metric_value
+             ) order by s.date asc, e.id asc) as points
+      from entry e
+      join session s on s.id = e.session_id
+      group by e.exercise_id
     )
     select
       x.id as exercise_id, x.canonical_name,
       f.load_type as start_load_type, f.load_value as start_load_value, f.metric_value as start_metric,
-      p.max_added_load, p.min_assist_load, p.max_metric
+      p.max_added_load, p.min_assist_load, p.max_metric,
+      h.points as history
     from exercise x
     join first_entry f on f.exercise_id = x.id
+    join history h on h.exercise_id = x.id
     left join v_prs p on p.exercise_id = x.id
     order by x.canonical_name
   `) as unknown as Array<{
     exercise_id: number; canonical_name: string;
     start_load_type: string; start_load_value: number | null; start_metric: number;
     max_added_load: number | null; min_assist_load: number | null; max_metric: number | null;
+    history: Array<{ date: string; load_value: number | null; metric_value: number }>;
   }>;
 }
 
