@@ -2,71 +2,57 @@
 import Link from "next/link";
 import { AreaChart, Area, Line, Tooltip, ResponsiveContainer } from "recharts";
 
-type HistoryPoint = { date: string; load_value: number | null; metric_value: number };
+type HistoryPoint = { date: string; load_type: string; load_value: number | null; metric_value: number };
 
 type PrRow = {
   exercise_id: number;
   canonical_name: string;
-  start_load_type: string;
-  start_load_value: number | null;
-  start_metric: number;
   max_added_load: number | null;
   min_assist_load: number | null;
   max_metric: number | null;
   history: HistoryPoint[];
 };
 
-type Dumbbell = {
-  exercise_id: number; canonical_name: string; start: number; current: number; history: HistoryPoint[];
+type Bucket = "assisted" | "added" | "bodyweight";
+
+const SECTIONS: Record<Bucket, { title: string; invert: boolean; fmt: (v: number) => string }> = {
+  assisted: { title: "Assisted", invert: true, fmt: (v) => `${v}kg` },
+  added: { title: "Added / External", invert: false, fmt: (v) => (v > 0 ? `+${v}kg` : `${v}kg`) },
+  bodyweight: { title: "Bodyweight Reps", invert: false, fmt: (v) => `${v}` },
 };
+const ORDER: Bucket[] = ["assisted", "added", "bodyweight"];
 
-const SECTIONS: {
-  key: string;
-  title: string;
-  invert: boolean;
-  match: (t: string) => boolean;
-  fmt: (v: number) => string;
-}[] = [
-  {
-    key: "assisted",
-    title: "Assisted",
-    invert: true,
-    match: (t) => t === "assisted",
-    fmt: (v) => `${v}kg`,
-  },
-  {
-    key: "added",
-    title: "Added / External",
-    invert: false,
-    match: (t) => t === "added" || t === "external",
-    fmt: (v) => (v > 0 ? `+${v}kg` : `${v}kg`),
-  },
-  {
-    key: "bodyweight",
-    title: "Bodyweight Reps",
-    invert: false,
-    match: (t) => t === "bodyweight",
-    fmt: (v) => `${v}`,
-  },
-];
+// An exercise's logged mode isn't fixed — Julien sometimes adds weight to a lift he
+// otherwise tracks bodyweight-only (or vice versa). Classify by whichever mode
+// dominates the history (ties broken by the most recent session), not just the
+// first-ever entry, so one early outlier session can't lock the wrong axis in.
+function decideBucket(history: HistoryPoint[]): Bucket {
+  if (history.some((h) => h.load_type === "assisted")) return "assisted";
+  const addedCount = history.filter((h) => h.load_type === "added" || h.load_type === "external").length;
+  const bwCount = history.filter((h) => h.load_type === "bodyweight").length;
+  if (addedCount === 0) return "bodyweight";
+  if (bwCount === 0) return "added";
+  if (addedCount !== bwCount) return addedCount > bwCount ? "added" : "bodyweight";
+  const last = history[history.length - 1];
+  return last.load_type === "added" || last.load_type === "external" ? "added" : "bodyweight";
+}
 
-function currentFor(row: PrRow, key: string, start: number): number {
-  if (key === "assisted") return row.min_assist_load == null ? start : Number(row.min_assist_load);
-  if (key === "added") return row.max_added_load == null ? start : Number(row.max_added_load);
+// A session logged bodyweight-only inside an added/assisted-mode lift is a real data
+// point (0kg added, or full-bodyweight/zero-assist that day) — plot it, don't drop it.
+function valueFor(point: HistoryPoint, bucket: Bucket): number | null {
+  if (bucket === "bodyweight") return Number(point.metric_value);
+  if (point.load_type === "bodyweight") return 0;
+  return point.load_value == null ? null : Number(point.load_value);
+}
+
+function currentFor(row: PrRow, bucket: Bucket, start: number): number {
+  if (bucket === "assisted") return row.min_assist_load == null ? start : Number(row.min_assist_load);
+  if (bucket === "added") return row.max_added_load == null ? start : Number(row.max_added_load);
   return row.max_metric == null ? start : Number(row.max_metric);
 }
 
 function fmtDate(d: string): string {
   return new Intl.DateTimeFormat("en-GB", { day: "2-digit", month: "short" }).format(new Date(d));
-}
-
-function seriesFor(history: HistoryPoint[], sectionKey: string): Array<{ label: string; v: number }> {
-  return history
-    .map((h) => ({
-      label: fmtDate(h.date),
-      v: sectionKey === "bodyweight" ? Number(h.metric_value) : h.load_value == null ? null : Number(h.load_value),
-    }))
-    .filter((d): d is { label: string; v: number } => d.v != null);
 }
 
 function Tip({
@@ -109,32 +95,37 @@ function Sparkline({ data, fmt }: { data: Array<{ label: string; v: number }>; f
 }
 
 function DumbbellRow({
-  d, min, max, invert, fmt, sectionKey,
-}: { d: Dumbbell; min: number; max: number; invert: boolean; fmt: (v: number) => string; sectionKey: string }) {
+  row, bucket, start, current, min, max, invert, fmt,
+}: {
+  row: PrRow; bucket: Bucket; start: number; current: number;
+  min: number; max: number; invert: boolean; fmt: (v: number) => string;
+}) {
   const pct = (v: number) => {
     const raw = min === max ? 50 : ((v - min) / (max - min)) * 100;
     return invert ? 100 - raw : raw;
   };
-  const startPct = pct(d.start);
-  const currentPct = pct(d.current);
+  const startPct = pct(start);
+  const currentPct = pct(current);
   const lo = Math.min(startPct, currentPct);
   const hi = Math.max(startPct, currentPct);
-  const spark = seriesFor(d.history, sectionKey);
+  const spark = row.history
+    .map((h) => ({ label: fmtDate(h.date), v: valueFor(h, bucket) }))
+    .filter((d): d is { label: string; v: number } => d.v != null);
 
   return (
     <div className="pr-row">
-      <Link href={`/exercise/${encodeURIComponent(d.canonical_name)}`} className="pr-name">
-        {d.canonical_name}
+      <Link href={`/exercise/${encodeURIComponent(row.canonical_name)}`} className="pr-name">
+        {row.canonical_name}
       </Link>
+      <div className="pr-spark">
+        {spark.length > 1 ? <Sparkline data={spark} fmt={fmt} /> : <div className="pr-spark-flat" />}
+      </div>
       <div className="pr-track">
         <div className="pr-connector" style={{ left: `${lo}%`, width: `${hi - lo}%` }} />
         <div className="pr-dot start" style={{ left: `${startPct}%` }} />
         <div className="pr-dot current" style={{ left: `${currentPct}%` }} />
-        <div className="pr-val start" style={{ left: `${startPct}%` }}>{fmt(d.start)}</div>
-        <div className="pr-val current" style={{ left: `${currentPct}%` }}>{fmt(d.current)}</div>
-      </div>
-      <div className="pr-spark">
-        {spark.length > 1 ? <Sparkline data={spark} fmt={fmt} /> : <div className="pr-spark-flat" />}
+        <div className="pr-val start" style={{ left: `${startPct}%` }}>{fmt(start)}</div>
+        <div className="pr-val current" style={{ left: `${currentPct}%` }}>{fmt(current)}</div>
       </div>
     </div>
   );
@@ -143,31 +134,39 @@ function DumbbellRow({
 export function PrDumbbellChart({ rows }: { rows: PrRow[] }) {
   if (!rows.length) return <div className="empty">No PRs yet — log a session to start tracking.</div>;
 
-  const sections = SECTIONS.map((s) => {
-    const dumbbells: Dumbbell[] = rows
-      .filter((r) => s.match(r.start_load_type))
-      .map((r) => {
-        const start = s.key === "bodyweight" ? Number(r.start_metric) : Number(r.start_load_value);
-        return {
-          exercise_id: r.exercise_id,
-          canonical_name: r.canonical_name,
-          start,
-          current: currentFor(r, s.key, start),
-          history: r.history,
-        };
-      });
-    if (!dumbbells.length) return null;
-    const vals = dumbbells.flatMap((d) => [d.start, d.current]);
-    return { ...s, dumbbells, min: Math.min(...vals), max: Math.max(...vals) };
+  const grouped = new Map<Bucket, Array<{ row: PrRow; start: number; current: number }>>();
+  for (const row of rows) {
+    const bucket = decideBucket(row.history);
+    const start = valueFor(row.history[0], bucket) ?? 0;
+    const current = currentFor(row, bucket, start);
+    if (!grouped.has(bucket)) grouped.set(bucket, []);
+    grouped.get(bucket)!.push({ row, start, current });
+  }
+
+  const sections = ORDER.map((bucket) => {
+    const items = grouped.get(bucket);
+    if (!items?.length) return null;
+    const vals = items.flatMap((it) => [it.start, it.current]);
+    return { bucket, ...SECTIONS[bucket], items, min: Math.min(...vals), max: Math.max(...vals) };
   }).filter((s): s is NonNullable<typeof s> => s != null);
 
   return (
     <>
       {sections.map((s) => (
-        <div className="pr-section" key={s.key}>
+        <div className="pr-section" key={s.bucket}>
           <div className="pr-section-title">{s.title}</div>
-          {s.dumbbells.map((d) => (
-            <DumbbellRow key={d.exercise_id} d={d} min={s.min} max={s.max} invert={s.invert} fmt={s.fmt} sectionKey={s.key} />
+          {s.items.map(({ row, start, current }) => (
+            <DumbbellRow
+              key={row.exercise_id}
+              row={row}
+              bucket={s.bucket}
+              start={start}
+              current={current}
+              min={s.min}
+              max={s.max}
+              invert={s.invert}
+              fmt={s.fmt}
+            />
           ))}
         </div>
       ))}
