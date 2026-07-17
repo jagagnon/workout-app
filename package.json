@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "node --import tsx --test tests/*.test.ts",
+    "test": "node --import tsx --env-file-if-exists=.env.local --test tests/*.test.ts",
     "db:schema": "psql \"$DATABASE_URL\" -f src/db/schema.sql",
     "db:seed": "tsx --env-file=.env.local src/db/seed-exercises.ts",
     "db:migrate-prs": "tsx --env-file=.env.local src/db/migrate-prs.ts",
@@ -22,6 +22,7 @@
     "recharts": "^3.8.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.61.1",
     "@types/node": "^20.19.43",
     "@types/react": "^19",
     "@types/react-dom": "^19",

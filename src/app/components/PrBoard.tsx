@@ -19,8 +19,10 @@ export function PrBoard({ rows }: { rows: Record<string, unknown>[] }) {
             <td className={r.max_added_load == null ? "dash" : "add"}>
               {r.max_added_load == null ? "—" : `+${Number(r.max_added_load)}`}
             </td>
+            {/* Assist is stored negative; the column reads as "kg of assistance", so
+                show magnitude to match the Current Assist stat rather than "-25". */}
             <td className={r.min_assist_load == null ? "dash" : "assist"}>
-              {r.min_assist_load == null ? "—" : `${Number(r.min_assist_load)}`}
+              {r.min_assist_load == null ? "—" : `${Math.abs(Number(r.min_assist_load))}`}
             </td>
             <td>{r.max_metric == null ? "—" : Number(r.max_metric)}</td>
           </tr>
