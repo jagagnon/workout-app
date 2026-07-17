@@ -8,6 +8,7 @@ import { PrBoard } from "./components/PrBoard";
 export const dynamic = "force-dynamic";
 
 const GOAL = new Date("2026-12-01T00:00:00Z");
+const PROGRAM_START = new Date("2026-06-01T00:00:00Z");
 
 function fmtDate(d: unknown): string {
   return new Intl.DateTimeFormat("en-GB", { day: "2-digit", month: "short" }).format(new Date(d as string));
@@ -25,6 +26,8 @@ export default async function Home() {
   const currentKg = ladder.length ? ladder[ladder.length - 1].kg : null;
 
   const days = Math.max(0, Math.ceil((GOAL.getTime() - Date.now()) / 86_400_000));
+  const elapsed = Math.min(1, Math.max(0,
+    (Date.now() - PROGRAM_START.getTime()) / (GOAL.getTime() - PROGRAM_START.getTime())));
 
   const assistSub =
     currentKg == null ? "no data yet"
@@ -50,6 +53,10 @@ export default async function Home() {
           <div className="lbl">days to goal · Dec &rsquo;26</div>
         </div>
       </header>
+
+      <div className="goalrail rise" style={{ animationDelay: "40ms" }} role="img" aria-label={`${Math.round(elapsed * 100)}% of the program window elapsed`}>
+        <i style={{ width: `${elapsed * 100}%` }} />
+      </div>
 
       <section className="card hero rise" style={{ animationDelay: "70ms" }}>
         <div className="hero-chart">
