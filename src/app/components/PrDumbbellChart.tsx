@@ -1,6 +1,8 @@
 "use client";
+import { Fragment } from "react";
 import Link from "next/link";
 import { AreaChart, Area, Line, XAxis, Tooltip, ResponsiveContainer } from "recharts";
+import { clusterByFamily } from "../../lib/family-groups";
 
 type HistoryPoint = {
   date: string; load_type: string; load_value: number | null;
@@ -11,6 +13,7 @@ type PrRow = {
   exercise_id: number;
   canonical_name: string;
   is_key: boolean;
+  family: string | null;
   max_added_load: number | null;
   min_assist_load: number | null;
   max_metric: number | null;
@@ -187,7 +190,12 @@ export function PrDumbbellChart({ rows }: { rows: PrRow[] }) {
     const items = grouped.get(bucket);
     if (!items?.length) return null;
     const vals = items.flatMap((it) => [it.start, it.current]);
-    return { bucket, ...SECTIONS[bucket], items, min: Math.min(...vals), max: Math.max(...vals) };
+    // Cluster same-family exercises together (e.g. all row variations) instead of
+    // straight alphabetical, so the parent movement and its variants read as a group.
+    const clustered = clusterByFamily(
+      items.map((it) => ({ ...it, canonical_name: it.row.canonical_name, family: it.row.family, is_key: it.row.is_key })),
+    );
+    return { bucket, ...SECTIONS[bucket], clustered, min: Math.min(...vals), max: Math.max(...vals) };
   }).filter((s): s is NonNullable<typeof s> => s != null);
 
   return (
@@ -198,17 +206,19 @@ export function PrDumbbellChart({ rows }: { rows: PrRow[] }) {
             <div className="pr-section-title">{s.title}</div>
             <div className="pr-section-caption">{s.caption}</div>
           </div>
-          {s.items.map(({ row, start, current }) => (
-            <DumbbellRow
-              key={row.exercise_id}
-              row={row}
-              bucket={s.bucket}
-              start={start}
-              current={current}
-              min={s.min}
-              max={s.max}
-              fmt={s.fmt}
-            />
+          {s.clustered.map(({ item: { row, start, current }, familyHeader }) => (
+            <Fragment key={row.exercise_id}>
+              {familyHeader && <div className="pr-family-title">{familyHeader}</div>}
+              <DumbbellRow
+                row={row}
+                bucket={s.bucket}
+                start={start}
+                current={current}
+                min={s.min}
+                max={s.max}
+                fmt={s.fmt}
+              />
+            </Fragment>
           ))}
         </div>
       ))}

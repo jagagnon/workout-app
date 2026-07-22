@@ -50,6 +50,9 @@ const mcpHandler = createMcpHandler(
         aliases: z.array(z.string()).optional(),
         primary_metric: z.enum(["reps", "seconds", "meters"]).optional(),
         default_load_type: z.enum(["added", "assisted", "external", "bodyweight"]).optional(),
+        family: z.string().optional().describe(
+          "Movement-variant group for the PR board (e.g. 'Row', 'Push-up', 'Pull-up', 'Dip') — only set if this is a variation of an existing tracked movement pattern, so it visually clusters with the others.",
+        ),
       },
       async (args) => {
         const res = await addExercise(args);

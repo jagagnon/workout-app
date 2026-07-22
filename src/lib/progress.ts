@@ -69,7 +69,7 @@ export async function allExercisePrs() {
       group by e.exercise_id
     )
     select
-      x.id as exercise_id, x.canonical_name, x.is_key,
+      x.id as exercise_id, x.canonical_name, x.is_key, x.family,
       p.max_added_load, p.min_assist_load, p.max_metric,
       h.points as history
     from exercise x
@@ -77,7 +77,7 @@ export async function allExercisePrs() {
     left join v_prs p on p.exercise_id = x.id
     order by x.is_key desc, x.canonical_name
   `) as unknown as Array<{
-    exercise_id: number; canonical_name: string; is_key: boolean;
+    exercise_id: number; canonical_name: string; is_key: boolean; family: string | null;
     max_added_load: number | null; min_assist_load: number | null; max_metric: number | null;
     history: Array<{ date: string; load_type: string; load_value: number | null; metric_value: number; metric_type: string }>;
   }>;
