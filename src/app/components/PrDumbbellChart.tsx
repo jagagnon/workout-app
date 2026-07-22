@@ -201,11 +201,11 @@ export function PrDumbbellChart({ rows }: { rows: PrRow[] }) {
   return (
     <>
       {sections.map((s) => (
-        <div className="pr-section" key={s.bucket}>
-          <div className="pr-section-head">
-            <div className="pr-section-title">{s.title}</div>
+        <details className="pr-section" key={s.bucket}>
+          <summary className="pr-section-head">
+            <div className="pr-section-title">{s.title} <span className="pr-section-count">· {s.clustered.length}</span></div>
             <div className="pr-section-caption">{s.caption}</div>
-          </div>
+          </summary>
           {s.clustered.map(({ item: { row, start, current }, familyHeader }) => (
             <Fragment key={row.exercise_id}>
               {familyHeader && <div className="pr-family-title">{familyHeader}</div>}
@@ -220,7 +220,7 @@ export function PrDumbbellChart({ rows }: { rows: PrRow[] }) {
               />
             </Fragment>
           ))}
-        </div>
+        </details>
       ))}
     </>
   );
