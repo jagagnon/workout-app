@@ -2,6 +2,7 @@ import { createMcpHandler } from "mcp-handler";
 import { z } from "zod";
 import { logWorkout } from "../../../lib/log-workout";
 import { addExercise } from "../../../lib/add-exercise";
+import { deleteExercise } from "../../../lib/delete-exercise";
 import { exerciseProgression, muscleUpLadder, prBoard, recentActuals } from "../../../lib/progress";
 import { logPlan, recentPlans } from "../../../lib/plans";
 
@@ -55,6 +56,19 @@ const mcpHandler = createMcpHandler(
         const text = res.created
           ? `✓ Created '${res.canonical_name}'${res.warning ? `  (note: similar to '${res.warning}')` : ""}`
           : `⚠ Not created — '${res.collision}' already exists. Use that, or re-send log_workout with the corrected name.`;
+        return { content: [{ type: "text", text }] };
+      },
+    );
+
+    server.tool(
+      "delete_exercise",
+      "Permanently delete a canonical exercise and all its logged entries — e.g. to remove a duplicate created by a mis-matched log (two names for the same movement). Matches by exact canonical name or alias only, never fuzzy. This is destructive and cannot be undone; confirm with the user before calling, especially if entries_removed would be > 0.",
+      { canonical_name: z.string() },
+      async ({ canonical_name }) => {
+        const res = await deleteExercise(canonical_name);
+        const text = res.deleted
+          ? `✓ Deleted '${res.canonical_name}' and ${res.entries_removed} logged ${res.entries_removed === 1 ? "entry" : "entries"}.`
+          : `⚠ No exercise found matching '${canonical_name}'.`;
         return { content: [{ type: "text", text }] };
       },
     );
