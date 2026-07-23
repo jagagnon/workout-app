@@ -447,6 +447,83 @@ a { color: inherit; text-decoration: none; }
   font-variant-numeric: tabular-nums;
 }
 
+/* ---- training calendar ---- */
+.cal-card { display: block; cursor: pointer; transition: border-color 0.15s ease, transform 0.2s var(--ease); }
+.cal-card:hover { border-color: var(--line-bright); transform: translateY(-2px); }
+.cal-hint {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  transition: color 0.15s ease;
+}
+.cal-card:hover .cal-hint { color: var(--accent); }
+.cal { display: flex; flex-direction: column; gap: 8px; }
+.cal-head, .cal-week { display: flex; align-items: center; gap: 10px; }
+.cal-dow, .cal-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; flex: 1; }
+.cal-dow span {
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+.cal-head-spacer, .cal-count {
+  flex-shrink: 0;
+  width: 72px;
+  text-align: right;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--text-faint);
+  font-variant-numeric: tabular-nums;
+}
+.cal-day {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 2px;
+  border-radius: 8px;
+  transition: background 0.15s ease;
+}
+.cal-day:hover { background: var(--surface-2); }
+.cal-daynum {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+}
+.cal-day.future .cal-daynum { color: var(--text-faint); opacity: 0.5; }
+.cal-dots { display: flex; gap: 4px; height: 6px; }
+.cal-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-faint); }
+.cal-dot.u { background: var(--accent); box-shadow: 0 0 6px var(--accent-glow); }
+.cal-dot.l { background: var(--ref); box-shadow: 0 0 6px rgba(111, 208, 230, 0.45); }
+.cal-tip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%) translateY(4px);
+  background: rgba(10, 10, 13, 0.92);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--line-bright);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--text);
+  white-space: nowrap;
+  box-shadow: 0 10px 30px -12px rgba(0, 0, 0, 0.8);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  z-index: 5;
+}
+.cal-tip > div + div { margin-top: 4px; }
+.cal-day:hover .cal-tip { opacity: 1; transform: translateX(-50%) translateY(0); }
+
 /* ---- stimulus tabs ---- */
 .stim-tabs { display: flex; gap: 6px; margin-bottom: 16px; }
 .stim-tab {

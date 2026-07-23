@@ -119,6 +119,18 @@ export async function recentActuals(region: "U" | "L", limit = 4) {
   `) as unknown as Array<Record<string, unknown>>;
 }
 
+// Feeds the dashboard calendar tile. Fetches a generous window (default 28d);
+// the component does its own Monday-aligned 3-week grid and ignores rows
+// outside it, so this just needs to cover that grid without exact alignment.
+export async function recentCalendar(days = 28) {
+  return (await sql`
+    select date, region, type, rpe
+    from session
+    where date >= current_date - ${days}::int
+    order by date asc
+  `) as unknown as Array<{ date: string; region: string | null; type: string | null; rpe: number | null }>;
+}
+
 export async function recentSessions(limit = 20) {
   return (await sql`
     select s.id, s.date, s.region, s.type, s.rpe, s.feel, s.mu_note,
