@@ -3,6 +3,7 @@ import { z } from "zod";
 import { logWorkout } from "../../../lib/log-workout";
 import { addExercise } from "../../../lib/add-exercise";
 import { deleteExercise } from "../../../lib/delete-exercise";
+import { deleteEntry } from "../../../lib/delete-entry";
 import { exerciseProgression, muscleUpLadder, prBoard, recentActuals } from "../../../lib/progress";
 import { logPlan, recentPlans } from "../../../lib/plans";
 
@@ -72,6 +73,19 @@ const mcpHandler = createMcpHandler(
         const text = res.deleted
           ? `✓ Deleted '${res.canonical_name}' and ${res.entries_removed} logged ${res.entries_removed === 1 ? "entry" : "entries"}.`
           : `⚠ No exercise found matching '${canonical_name}'.`;
+        return { content: [{ type: "text", text }] };
+      },
+    );
+
+    server.tool(
+      "delete_entry",
+      "Delete a single logged entry — one exercise's result within one session — without touching the canonical exercise or its other history. Use this instead of delete_exercise to undo a single mis-matched log (e.g. a session got logged under the wrong exercise) while keeping the rest of that exercise's history intact. Matches by exact canonical name or alias only, never fuzzy. Destructive and cannot be undone; confirm with the user before calling.",
+      { date: z.string(), exercise: z.string(), region: z.enum(["U", "L"]).optional() },
+      async ({ date, exercise, region }) => {
+        const res = await deleteEntry(date, exercise, region);
+        const text = res.deleted
+          ? `✓ Deleted ${res.canonical_name} (${res.metric_value}) logged on ${date}.`
+          : `⚠ ${res.error}`;
         return { content: [{ type: "text", text }] };
       },
     );
