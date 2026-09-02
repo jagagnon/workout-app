@@ -5,7 +5,7 @@ import { formatLoad } from "../../lib/load";
 import { Sparkline } from "../components/Sparkline";
 import type { HistoryPoint } from "../../lib/progress";
 import type { PlanRow } from "../../lib/plans";
-import type { LoadType, MetricType } from "../../lib/types";
+import type { LoadType, MetricType, PlanItem } from "../../lib/types";
 
 export interface RegistryRow {
   id: number;
@@ -52,8 +52,25 @@ function blankCard(exercise: string, reg?: RegistryRow): Card {
   };
 }
 
-function cardsFromPlan(plan: PlanRow | null): Card[] {
-  const items = plan?.items ?? [];
+// `body` carries no loads and the older plans carry no items at all, so a lift's
+// last logged load stands in — that is the number he is most likely to repeat or
+// nudge, and the whole point is that he arrives at a form he only has to tweak.
+function seedLoad(i: PlanItem, last?: HistoryPoint):
+  { load_type: LoadType; load_value: string } {
+  if (i.load_type && i.load_type !== "bodyweight") {
+    return { load_type: i.load_type, load_value: i.load_value != null ? String(Math.abs(i.load_value)) : "" };
+  }
+  if (i.load_type === "bodyweight") return { load_type: "bodyweight", load_value: "" };
+  if (last) {
+    return {
+      load_type: last.load_type as LoadType,
+      load_value: last.load_value != null ? String(Math.abs(last.load_value)) : "",
+    };
+  }
+  return { load_type: "bodyweight", load_value: "" };
+}
+
+function cardsFromPlan(items: PlanItem[], history: Record<string, HistoryPoint[]>): Card[] {
   return items.map((i) => ({
     key: nextKey(),
     block: i.block ?? null,
@@ -63,8 +80,7 @@ function cardsFromPlan(plan: PlanRow | null): Card[] {
     sets: i.sets != null ? String(i.sets) : "",
     // Pre-fill reps with the top of the prescribed range — the number he's aiming at.
     reps: topOfRange(i.reps) ?? "",
-    load_type: i.load_type ?? "bodyweight",
-    load_value: i.load_value != null ? String(Math.abs(i.load_value)) : "",
+    ...seedLoad(i, history[i.exercise]?.[0]),
     per_side: i.per_side ?? false,
     metric_type: i.metric_type ?? "reps",
     skipped: false,
@@ -107,13 +123,14 @@ type EntryResult = {
   candidates?: string[];
 };
 
-export function LogForm({ date, plan, registry, history }: {
+export function LogForm({ date, plan, items, registry, history }: {
   date: string;
   plan: PlanRow | null;
+  items: PlanItem[];
   registry: RegistryRow[];
   history: Record<string, HistoryPoint[]>;
 }) {
-  const [cards, setCards] = useState<Card[]>(() => cardsFromPlan(plan));
+  const [cards, setCards] = useState<Card[]>(() => cardsFromPlan(items, history));
   const [region, setRegion] = useState<"U" | "L">((plan?.region as "U" | "L") ?? "U");
   const [type, setType] = useState<string>(plan?.stimulus ?? "");
   const [rpe, setRpe] = useState("");
@@ -269,9 +286,9 @@ export function LogForm({ date, plan, registry, history }: {
           No plan logged for {date}. Add exercises below.
         </p>
       )}
-      {/* A plan written by the pre-items skill version has body but nothing to
-          pre-fill from. Show the prescription as text so it is at least readable. */}
-      {plan && !plan.items?.length && (
+      {/* Only when nothing could be parsed out of the body — otherwise the cards
+          are the prescription and repeating it as text is noise. */}
+      {plan && !items.length && (
         <section className="card rise" style={{ marginBottom: 18 }}>
           <div className="card-title">Prescribed</div>
           <pre className="log-plan-body">{plan.body}</pre>
@@ -427,6 +444,7 @@ function LogCard({ card: c, byFamily, points, suggestion, result, onPatch, onSwa
           className="log-select" value={c.exercise}
           onChange={(e) => onSwap(e.target.value)}
         >
+          {!c.exercise && <option value="">— pick a lift —</option>}
           {byFamily.map(([family, rows]) => (
             <optgroup key={family} label={family}>
               {rows.map((r) => <option key={r.id} value={r.canonical_name}>{r.canonical_name}</option>)}
