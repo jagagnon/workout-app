@@ -990,3 +990,4 @@ a { color: inherit; text-decoration: none; }
 /* A skipped lift stays in the session log as an adherence signal — dimmed, and
    never rendered as a zero-rep result. */
 .skipped-mark { color: var(--text-faint); font-style: italic; }
+.log-sugg.pending { color: var(--text-faint); }

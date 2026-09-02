@@ -203,7 +203,9 @@ export function LogForm({ date, plan, items, registry, history }: {
   }, [hist, patch, registry]);
 
   function suggestionFor(c: Card): string | null {
-    if (c.skipped || c.reps === "") return null;
+    // RPE flips the call (top of range at 7 progresses, at 8 holds), so showing
+    // one before it is entered states a verdict the missing input could reverse.
+    if (c.skipped || c.reps === "" || rpe === "") return null;
     return autoregulate({
       reps_prescribed: c.presc?.reps ?? null,
       reps_done: Number(c.reps),
@@ -502,7 +504,9 @@ function LogCard({ card: c, byFamily, points, suggestion, result, onPatch, onSwa
             </button>
           </div>
 
-          {suggestion && <div className="log-sugg">{suggestion}</div>}
+          {suggestion
+            ? <div className="log-sugg">{suggestion}</div>
+            : !c.skipped && c.reps !== "" && <div className="log-sugg pending">add session RPE for a progression call</div>}
 
           {showNote || c.note ? (
             <input
@@ -521,7 +525,10 @@ function LogCard({ card: c, byFamily, points, suggestion, result, onPatch, onSwa
                     <div key={i} className="log-hist-row">
                       <span>{fmtDate(p.date)}</span>
                       <span>{formatLoad(p.load_type as LoadType, p.load_value, "kg", p.per_side)}</span>
-                      <span>{p.metric_value}{p.metric_type === "seconds" ? "s" : p.metric_type === "meters" ? "m" : ""}</span>
+                      <span>
+                        {p.sets ? `${p.sets} × ` : ""}{p.metric_value}
+                        {p.metric_type === "seconds" ? "s" : p.metric_type === "meters" ? "m" : ""}
+                      </span>
                     </div>
                   ))}
                   {points[0]?.notes && <div className="log-hist-note">{points[0].notes}</div>}
