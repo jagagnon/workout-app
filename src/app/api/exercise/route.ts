@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 import { addExercise, type AddExerciseInput } from "../../../lib/add-exercise";
 import { deleteExercise } from "../../../lib/delete-exercise";
-import { checkBearer } from "../../../lib/auth";
+import { checkBearerOrSession } from "../../../lib/auth";
 
 export async function POST(req: Request) {
-  if (!checkBearer(req)) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  if (!checkBearerOrSession(req)) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   let body: AddExerciseInput;
   try { body = await req.json(); } catch { return NextResponse.json({ error: "bad json" }, { status: 400 }); }
   if (!body?.canonical_name) return NextResponse.json({ error: "no canonical_name" }, { status: 400 });
@@ -13,7 +13,7 @@ export async function POST(req: Request) {
 }
 
 export async function DELETE(req: Request) {
-  if (!checkBearer(req)) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  if (!checkBearerOrSession(req)) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   let body: { canonical_name?: string; exercise_id?: number };
   try { body = await req.json(); } catch { return NextResponse.json({ error: "bad json" }, { status: 400 }); }
   const key = body?.exercise_id ?? body?.canonical_name;

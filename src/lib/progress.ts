@@ -6,7 +6,7 @@ export async function exerciseProgression(canonicalName: string) {
     from entry e
     join session s on s.id = e.session_id
     join exercise x on x.id = e.exercise_id
-    where x.canonical_name = ${canonicalName}
+    where x.canonical_name = ${canonicalName} and e.skipped = false
     order by s.date asc
   `) as unknown as Array<{ date: string; stimulus: string | null; metric_value: number; load_value: number | null }>;
 }
@@ -17,7 +17,7 @@ export async function muscleUpLadder() {
     from entry e
     join session s on s.id = e.session_id
     join exercise x on x.id = e.exercise_id
-    where x.canonical_name = 'Muscle-up'
+    where x.canonical_name = 'Muscle-up' and e.skipped = false
     order by s.date asc
   `) as unknown as Array<{ date: string; load_value: number | null; load_type: string; metric_value: number }>;
 }
@@ -30,7 +30,7 @@ export async function stalledLifts(n = 3) {
       from entry e
       join session s on s.id = e.session_id
       join exercise x on x.id = e.exercise_id
-      where e.load_type in ('added','external')
+      where e.load_type in ('added','external') and e.skipped = false
     )
     select canonical_name,
            max(load_value) as recent_best,
@@ -66,6 +66,7 @@ export async function allExercisePrs() {
              ) order by s.date asc, e.id asc) as points
       from entry e
       join session s on s.id = e.session_id
+      where e.skipped = false
       group by e.exercise_id
     )
     select
@@ -92,7 +93,7 @@ export async function muscleUpContext() {
       from entry e
       join session s on s.id = e.session_id
       join exercise x on x.id = e.exercise_id
-      where x.canonical_name = 'Muscle-up'
+      where x.canonical_name = 'Muscle-up' and e.skipped = false
     )
     select
       (select d from last_mu) as last_date,
@@ -102,12 +103,16 @@ export async function muscleUpContext() {
   return row as unknown as { last_date: string | null; upper_since: number };
 }
 
+// Skipped entries are NOT filtered out here (unlike every PR/progression query):
+// a skip is an adherence signal the generator should see when autoregulating, so
+// it rides along flagged rather than vanishing. Same for recentSessions below.
 export async function recentActuals(region: "U" | "L", limit = 4) {
   return (await sql`
     select s.date, s.region, s.type, s.rpe, s.feel, s.mu_note,
            json_agg(json_build_object(
              'exercise', x.canonical_name, 'metric', e.metric_value, 'metric_type', e.metric_type,
-             'load_type', e.load_type, 'load_value', e.load_value, 'per_side', e.per_side
+             'load_type', e.load_type, 'load_value', e.load_value, 'per_side', e.per_side,
+             'sets', e.sets, 'skipped', e.skipped, 'notes', e.notes
            ) order by e.id) as entries
     from session s
     join entry e on e.session_id = s.id
@@ -131,12 +136,51 @@ export async function recentCalendar(days = 28) {
   `) as unknown as Array<{ date: string; region: string | null; type: string | null; rpe: number | null }>;
 }
 
+export interface HistoryPoint {
+  date: string;
+  metric_value: number;
+  metric_type: string;
+  load_type: string;
+  load_value: number | null;
+  per_side: boolean;
+  sets: number | null;
+  notes: string | null;
+}
+
+// Last N results for each of several lifts, newest first — the strip shown next
+// to each input on /log. One round-trip for the whole session; never call this
+// per exercise.
+export async function recentPerExercise(names: string[], limit = 7) {
+  if (!names.length) return [] as Array<{ canonical_name: string; points: HistoryPoint[] }>;
+  return (await sql`
+    with ranked as (
+      select x.canonical_name, s.date, e.metric_value, e.metric_type,
+             e.load_type, e.load_value, e.per_side, e.sets, e.notes,
+             row_number() over (partition by e.exercise_id order by s.date desc, e.id desc) as rn
+      from entry e
+      join session s on s.id = e.session_id
+      join exercise x on x.id = e.exercise_id
+      where x.canonical_name = any(${names}) and e.skipped = false
+    )
+    select canonical_name,
+           json_agg(json_build_object(
+             'date', date, 'metric_value', metric_value, 'metric_type', metric_type,
+             'load_type', load_type, 'load_value', load_value, 'per_side', per_side,
+             'sets', sets, 'notes', notes
+           ) order by date desc) as points
+    from ranked
+    where rn <= ${limit}
+    group by canonical_name
+  `) as unknown as Array<{ canonical_name: string; points: HistoryPoint[] }>;
+}
+
 export async function recentSessions(limit = 20) {
   return (await sql`
     select s.id, s.date, s.region, s.type, s.rpe, s.feel, s.mu_note,
            json_agg(json_build_object(
              'exercise', x.canonical_name, 'metric', e.metric_value,
-             'load_type', e.load_type, 'load_value', e.load_value, 'unit', e.load_unit
+             'load_type', e.load_type, 'load_value', e.load_value, 'unit', e.load_unit,
+             'sets', e.sets, 'skipped', e.skipped
            ) order by e.id) as entries
     from session s
     join entry e on e.session_id = s.id

@@ -70,3 +70,37 @@ alter table session add column if not exists mu_note  text;
 -- Groups movement variants (e.g. "Row", "Push-up") so the PR board can visually
 -- cluster them; null means the exercise doesn't share a variant family.
 alter table exercise add column if not exists family text;
+
+-- Logged-in-app additions (2026-09-02): the /log form records how many sets were
+-- done and whether a prescribed exercise was deliberately skipped. A skipped row
+-- is kept (adherence signal) but must never reach PR/progression maths — see the
+-- v_prs redefinition below and the `skipped = false` guards in src/lib/progress.ts.
+alter table entry add column if not exists sets    smallint;
+alter table entry add column if not exists skipped boolean not null default false;
+
+-- Structured prescription for the /log form. `body` remains the authoritative
+-- text block the generator's rotation/variety checks read back via get_recent_plans;
+-- `items` is additive and carries what `body` deliberately drops (load, tempo).
+alter table plan add column if not exists items jsonb;
+
+-- Rate-limit ledger for the passcode gate on /log.
+create table if not exists auth_attempt (
+  id         serial primary key,
+  ip         text not null,
+  ok         boolean not null default false,
+  created_at timestamptz not null default now()
+);
+create index if not exists auth_attempt_ip_time on auth_attempt (ip, created_at desc);
+
+-- Redefined after `skipped` exists: a skipped exercise is not a zero-rep result.
+create or replace view v_prs as
+select
+  e.exercise_id,
+  x.canonical_name,
+  max(e.load_value)  filter (where e.load_type in ('added','external')) as max_added_load,
+  max(e.load_value)  filter (where e.load_type = 'assisted')           as min_assist_load,
+  max(e.metric_value)                                                   as max_metric
+from entry e
+join exercise x on x.id = e.exercise_id
+where e.skipped = false
+group by e.exercise_id, x.canonical_name;

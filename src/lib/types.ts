@@ -13,6 +13,26 @@ export interface EntryInput {
   load_unit?: string;
   per_side?: boolean;
   notes?: string;
+  sets?: number | null;
+  // Recorded, not omitted: a skip is an adherence signal. Excluded from every
+  // PR/progression query (see src/lib/progress.ts and the v_prs view).
+  skipped?: boolean;
+}
+
+// The structured prescription written alongside plan.body. Carries what `body`
+// deliberately drops — load and tempo — so /log can pre-fill the form.
+export interface PlanItem {
+  block?: string;
+  label?: string;
+  exercise: string;
+  sets?: number | null;
+  reps?: string | null;      // a range ("6-8"); string on purpose
+  tempo?: string | null;     // display-only, never an input
+  load_type?: LoadType;
+  load_value?: number | null;
+  metric_type?: MetricType;
+  per_side?: boolean;
+  cue?: string | null;
 }
 
 export interface LogInput {

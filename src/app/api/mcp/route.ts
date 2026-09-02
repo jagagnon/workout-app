@@ -16,6 +16,26 @@ const entrySchema = z.object({
   load_unit: z.string().optional(),
   per_side: z.boolean().optional(),
   notes: z.string().optional(),
+  sets: z.number().nullable().optional(),
+  skipped: z.boolean().optional().describe(
+    "Prescribed but deliberately not done. The row is kept as an adherence signal and excluded from all PR/progression maths.",
+  ),
+});
+
+// The structured prescription that /log renders as a pre-filled form. Mirrors
+// PlanItem in src/lib/types.ts.
+const planItemSchema = z.object({
+  block: z.string().optional().describe("Block letter, e.g. 'A', 'B'."),
+  label: z.string().optional().describe("Slot label, e.g. 'A1' — preserves superset pairing."),
+  exercise: z.string(),
+  sets: z.number().nullable().optional(),
+  reps: z.string().nullable().optional().describe("Prescribed range as written, e.g. '6-8'. String, not a number."),
+  tempo: z.string().nullable().optional().describe("e.g. '3-0-1-1'. Display-only in the app."),
+  load_type: z.enum(["added", "assisted", "external", "bodyweight"]).optional(),
+  load_value: z.number().nullable().optional(),
+  metric_type: z.enum(["reps", "seconds", "meters"]).optional(),
+  per_side: z.boolean().optional(),
+  cue: z.string().nullable().optional(),
 });
 
 const mcpHandler = createMcpHandler(
@@ -111,19 +131,20 @@ const mcpHandler = createMcpHandler(
 
     server.tool(
       "log_plan",
-      "Save the prescribed plan for a session (the programmed exercise blocks) so future generations can rotate variety and read stimulus history. body = the verbatim W/A1/…/F block.",
+      "Save the prescribed plan for a session (the programmed exercise blocks) so future generations can rotate variety and read stimulus history. body = the verbatim W/A1/…/F block. Also pass items — the same session serialised per-exercise, including the load and tempo body drops — so the /log page can render it as a pre-filled form.",
       {
         date: z.string().optional(),
         region: z.enum(["U", "L"]),
         stimulus: z.enum(["Strength", "Hypertrophy", "Volume"]).optional(),
         body: z.string(),
+        items: z.array(planItemSchema).optional(),
       },
       async (args) => {
         const row = await logPlan(args);
         return {
           content: [{
             type: "text",
-            text: `Plan saved ${row.date} ${row.region}${row.stimulus ? " · " + row.stimulus : ""}`,
+            text: `Plan saved ${row.date} ${row.region}${row.stimulus ? " · " + row.stimulus : ""}${row.items ? ` · ${row.items.length} items` : " · body only"}`,
           }],
         };
       },

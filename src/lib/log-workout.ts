@@ -66,9 +66,10 @@ export async function logWorkout(input: LogInput): Promise<LogResult> {
         max(load_value) filter (where load_type in ('added','external')) as max_added,
         max(load_value) filter (where load_type = 'assisted') as min_assist,
         max(metric_value) as max_metric
-      from entry where exercise_id = ${m.exercise_id}
+      from entry where exercise_id = ${m.exercise_id} and skipped = false
     `;
-    const isPr =
+    // A skipped exercise is not a result: never a PR, whatever numbers came along.
+    const isPr = e.skipped ? false :
       (e.load_type === "added" || e.load_type === "external")
         ? e.load_value != null && (prRow.max_added == null || e.load_value > Number(prRow.max_added))
       : e.load_type === "assisted"
@@ -77,20 +78,23 @@ export async function logWorkout(input: LogInput): Promise<LogResult> {
 
     await sql`
       insert into entry (session_id, exercise_id, metric_type, metric_value,
-                         load_type, load_value, load_unit, per_side, notes)
+                         load_type, load_value, load_unit, per_side, notes, sets, skipped)
       values (${session_id}, ${m.exercise_id}, ${e.metric_type ?? "reps"}, ${e.metric},
               ${e.load_type}, ${e.load_value ?? null}, ${e.load_unit ?? "kg"},
-              ${e.per_side ?? false}, ${e.notes ?? null})
+              ${e.per_side ?? false}, ${e.notes ?? null}, ${e.sets ?? null}, ${e.skipped ?? false})
       on conflict (session_id, exercise_id) do update set
         metric_type = excluded.metric_type, metric_value = excluded.metric_value,
         load_type = excluded.load_type, load_value = excluded.load_value,
-        load_unit = excluded.load_unit, per_side = excluded.per_side, notes = excluded.notes
+        load_unit = excluded.load_unit, per_side = excluded.per_side, notes = excluded.notes,
+        sets = excluded.sets, skipped = excluded.skipped
     `;
 
     results.push({
       input: e, exercise_id: m.exercise_id, canonical_name: m.canonical_name,
       resolution: m.resolution, written: true, is_pr: isPr,
-      display: `${m.canonical_name} ${e.metric} @ ${formatLoad(e.load_type, e.load_value, e.load_unit ?? "kg", e.per_side ?? false)}`,
+      display: e.skipped
+        ? `${m.canonical_name} — skipped`
+        : `${m.canonical_name} ${e.metric} @ ${formatLoad(e.load_type, e.load_value, e.load_unit ?? "kg", e.per_side ?? false)}`,
     });
   }
 
