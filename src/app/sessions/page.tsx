@@ -15,7 +15,7 @@ export default async function SessionsPage() {
   const sess = sessions as Array<{
     id: number; date: unknown; region: string | null; type: string | null;
     rpe: number | null; feel: string | null; mu_note: string | null;
-    entries: Array<{ exercise: string; metric: number; load_type: string; load_value: number | null; unit: string }>;
+    entries: Array<{ exercise: string; metric: number; load_type: string; load_value: number | null; unit: string; skipped: boolean }>;
   }>;
 
   return (
@@ -45,7 +45,11 @@ export default async function SessionsPage() {
                   {s.entries.map((e, i) => (
                     <div className="entry-line" key={i}>
                       <span className="ex">{e.exercise}</span>
-                      <span className="res">{e.metric} @ {formatLoad(e.load_type as LoadType, e.load_value, e.unit)}</span>
+                      <span className="res">
+                        {e.skipped
+                          ? <span className="skipped-mark">skipped</span>
+                          : <>{e.metric} @ {formatLoad(e.load_type as LoadType, e.load_value, e.unit)}</>}
+                      </span>
                     </div>
                   ))}
                   {s.feel && <div className="session-note"><span className="note-k">feel</span>{s.feel}</div>}

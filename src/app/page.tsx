@@ -53,6 +53,7 @@ export default async function Home() {
         <div>
           <div className="kicker">Strength · Actuals</div>
           <h1 className="wordmark">The Muscle&#8209;Up<br /><span>Project</span></h1>
+          <Link href="/log" className="log-link">Log today&rsquo;s session &rarr;</Link>
         </div>
         <div className="countdown">
           <div className="num">{days}</div>
