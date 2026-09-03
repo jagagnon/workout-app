@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { Anton, Archivo, JetBrains_Mono } from "next/font/google";
+import { Fraunces, Karla, Space_Mono } from "next/font/google";
 import "./globals.css";
 
-const display = Anton({ weight: "400", subsets: ["latin"], variable: "--font-display" });
-const body = Archivo({ subsets: ["latin"], variable: "--font-body" });
-const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono" });
+const display = Fraunces({ subsets: ["latin"], variable: "--font-display" });
+const body = Karla({ subsets: ["latin"], variable: "--font-body" });
+const mono = Space_Mono({ weight: ["400", "700"], subsets: ["latin"], variable: "--font-mono" });
 
 export const metadata: Metadata = {
   title: "The Muscle-Up Project",
