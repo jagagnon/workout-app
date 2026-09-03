@@ -91,8 +91,16 @@ document is worthless if the page renders at 980px CSS pixels and scales down.
 
 ## Phase 1 — Tokens and type
 
-One block plus seven hardcoded escapees. After this the whole app is indigo but still
-card-shaped. Fully reversible; ship it and look at it before going further.
+One block plus seven hardcoded escapees. After this the whole app is indigo and set in the
+new faces, with the card structure otherwise intact. Fully reversible; ship it and look at
+it before going further.
+
+**Note on `--radius`:** the table below drops it from 14px to 2px, which squares off `.card`
+and `.log-card` immediately, since both read `border-radius: var(--radius)`. That is
+intentional and lands in Phase 1, not Phase 2 — it means the cards are near-square while
+they still carry the corner-tick motif and the card gradient, which looks slightly
+incoherent until Phase 2 finishes the job. Do not "fix" this in Phase 1 and do not treat it
+as a reason to skip the token change.
 
 ### 1a. Replace the `:root` block in `src/app/globals.css` (lines 1–29)
 
@@ -232,9 +240,18 @@ ticks in two corners. Target: a square slab with a lit top edge.
 }
 ```
 
+Phase 1 already set `--radius: 2px`, so the cards arrive here nearly square. Setting
+`border-radius: 0` explicitly here is still correct — plates have no radius at all, and
+`--radius` stays at 2px for the small controls that should keep a hint of one.
+
 **Delete `.card::before` and `.card::after` entirely** (globals.css lines 195–214, the
 corner ticks). They are the signature motif of the *old* direction and read as noise
 against a plate. Removing them is intended, not an oversight.
+
+**`--bg` and `--bg-2` are deliberately the same value** (`#0b0e18`). This is not a typo in
+the token table. The stack alternates between `--surface` (the raised plate face) and the
+night ground; it does not need two distinct dark tones, and the alternation in 2b below
+depends on them being identical.
 
 ### 2b. Alternate the plates
 
