@@ -31,12 +31,16 @@ type Card = {
   note: string;
 };
 
+// Three buttons, not four. `added` and `external` are the same thing to every
+// query that reads them — the sign is what carries meaning: positive is load,
+// negative is assistance. `external` survives in the DB and in what the
+// generator prescribes, so it maps onto the same button rather than vanishing.
 const LOAD_TYPES: Array<{ v: LoadType; l: string }> = [
   { v: "bodyweight", l: "BW" },
-  { v: "added", l: "+kg" },
+  { v: "added", l: "kg" },
   { v: "assisted", l: "assist" },
-  { v: "external", l: "kg" },
 ];
+const loadButton = (t: LoadType): LoadType => (t === "external" ? "added" : t);
 
 let seq = 0;
 const nextKey = () => `c${seq++}`;
@@ -472,9 +476,13 @@ function LogCard({ card: c, byFamily, points, result, onPatch, onSwap, onRemove 
 
           <div className="log-fields">
             <Segmented
-              value={c.load_type}
+              value={loadButton(c.load_type)}
               options={LOAD_TYPES.map((t) => ({ v: t.v, l: t.l }))}
-              onChange={(v) => onPatch({ load_type: v as LoadType })}
+              // Tapping "kg" on a lift the generator prescribed as external leaves
+              // it external — same button, no need to rewrite what it asked for.
+              onChange={(v) => onPatch({
+                load_type: v === "added" && c.load_type === "external" ? "external" : (v as LoadType),
+              })}
             />
             <button
               type="button"

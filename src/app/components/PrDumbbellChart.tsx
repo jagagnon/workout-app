@@ -32,9 +32,9 @@ const SECTIONS: Record<Bucket, { title: string; caption: string; fmt: (v: number
     fmt: (v) => `${Math.abs(v)}kg`,
   },
   added: {
-    title: "Added / External",
+    title: "Loaded",
     caption: "load added →",
-    fmt: (v) => (v > 0 ? `+${v}kg` : `${v}kg`),
+    fmt: (v) => `${v}kg`,
   },
   reps: { title: "Bodyweight Reps", caption: "reps →", fmt: (v) => `${v}` },
   hold: { title: "Holds", caption: "seconds held →", fmt: (v) => `${v}s` },
