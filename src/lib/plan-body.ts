@@ -31,8 +31,12 @@ function parseOne(label: string, block: string, raw: string): PlanItem | null {
     text = text.slice(0, trailingParen.index).trim();
   }
 
-  const perSide = /\/\s*side\b/i.test(text);
-  text = text.replace(/\/\s*side\b/i, " ").trim();
+  // per_side is a *load* qualifier: "16kg/side" means a bell in each hand. Plan text
+  // far more often writes "3x10/side", which means each leg does 10 reps and says
+  // nothing about how the lift was loaded — reading that as a load qualifier is what
+  // turned single-bell work into phantom double loads. Only a weight earns the flag.
+  const perSide = /\d\s*(?:kg|lbs?)\s*\/\s*side\b/i.test(text);
+  text = text.replace(/\/\s*side\b/gi, " ").replace(/\s{2,}/g, " ").trim();
 
   let loadType: LoadType | undefined;
   let loadValue: number | null = null;
