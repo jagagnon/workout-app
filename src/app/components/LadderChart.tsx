@@ -36,9 +36,13 @@ export function LadderChart({ data }: { data: Pt[] }) {
     <ResponsiveContainer width="100%" height={300}>
       <AreaChart data={data} margin={{ top: 20, right: 14, bottom: 4, left: 8 }}>
         <defs>
+          {/* The assist is negative, so this area is bounded ABOVE by the bodyweight line
+              and below by the trace. A fade to zero opacity therefore dissolves the edge
+              that carries the data and leaves a slab with a false flat bottom — keep both
+              stops opaque enough that the curve stays the shape you read. */}
           <linearGradient id="ladderFill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="var(--accent)" stopOpacity={0.35} />
-            <stop offset="100%" stopColor="var(--accent)" stopOpacity={0} />
+            <stop offset="0%" stopColor="var(--accent)" stopOpacity={0.2} />
+            <stop offset="100%" stopColor="var(--accent)" stopOpacity={0.12} />
           </linearGradient>
         </defs>
         {/* Spaced by real elapsed time: a 17-day layoff must not read like a 2-day turnaround. */}
