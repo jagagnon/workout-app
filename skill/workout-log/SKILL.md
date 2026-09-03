@@ -46,6 +46,8 @@ description: >
      then re-send `/api/log`. A `collision` response means it already exists; a `warning` means
      it was created but resembles an existing lift — show Julien the note.
 
+5. **Close with the dashboard link** — `{WORKOUT_API_URL}` — so he can see the PR board and ladder reflect what was just logged.
+
 ## Reviewing progress
 - Trend for a lift: `GET /api/progress?exercise=<canonical>`.
 - Muscle-up ladder: `GET /api/progress?ladder=1`.
