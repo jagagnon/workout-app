@@ -78,14 +78,14 @@ export async function logWorkout(input: LogInput): Promise<LogResult> {
 
     await sql`
       insert into entry (session_id, exercise_id, metric_type, metric_value,
-                         load_type, load_value, load_unit, per_side, notes, sets, skipped)
+                         load_type, load_value, load_unit, notes, sets, skipped)
       values (${session_id}, ${m.exercise_id}, ${e.metric_type ?? "reps"}, ${e.metric},
               ${e.load_type}, ${e.load_value ?? null}, ${e.load_unit ?? "kg"},
-              ${e.per_side ?? false}, ${e.notes ?? null}, ${e.sets ?? null}, ${e.skipped ?? false})
+              ${e.notes ?? null}, ${e.sets ?? null}, ${e.skipped ?? false})
       on conflict (session_id, exercise_id) do update set
         metric_type = excluded.metric_type, metric_value = excluded.metric_value,
         load_type = excluded.load_type, load_value = excluded.load_value,
-        load_unit = excluded.load_unit, per_side = excluded.per_side, notes = excluded.notes,
+        load_unit = excluded.load_unit, notes = excluded.notes,
         sets = excluded.sets, skipped = excluded.skipped
     `;
 
@@ -94,7 +94,7 @@ export async function logWorkout(input: LogInput): Promise<LogResult> {
       resolution: m.resolution, written: true, is_pr: isPr,
       display: e.skipped
         ? `${m.canonical_name} — skipped`
-        : `${m.canonical_name} ${e.metric} @ ${formatLoad(e.load_type, e.load_value, e.load_unit ?? "kg", e.per_side ?? false)}`,
+        : `${m.canonical_name} ${e.metric} @ ${formatLoad(e.load_type, e.load_value, e.load_unit ?? "kg")}`,
     });
   }
 

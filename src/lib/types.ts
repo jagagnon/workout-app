@@ -11,7 +11,6 @@ export interface EntryInput {
   load_type: LoadType;
   load_value?: number | null;
   load_unit?: string;
-  per_side?: boolean;
   notes?: string;
   sets?: number | null;
   // Recorded, not omitted: a skip is an adherence signal. Excluded from every
@@ -31,7 +30,6 @@ export interface PlanItem {
   load_type?: LoadType;
   load_value?: number | null;
   metric_type?: MetricType;
-  per_side?: boolean;
   cue?: string | null;
 }
 

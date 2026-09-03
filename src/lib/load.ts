@@ -4,7 +4,6 @@ export function formatLoad(
   loadType: LoadType,
   value: number | null | undefined,
   unit = "kg",
-  perSide = false,
 ): string {
   // The sign is always explicit: +5kg is load carried, -25kg is assistance.
   // It does not depend on `added` vs `external` — that distinction is not applied
@@ -12,5 +11,5 @@ export function formatLoad(
   let base: string;
   if (loadType === "bodyweight" || value == null) base = "BW";
   else base = `${value > 0 ? "+" : ""}${value}${unit}`;
-  return perSide && base !== "BW" ? `${base}/side` : base;
+  return base;
 }

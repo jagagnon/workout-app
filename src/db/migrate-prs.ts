@@ -41,11 +41,11 @@ async function main() {
     const exercise_id = e.exercise_id ?? idByName.get(e.exercise)!;
     const session_id = sessionByDate.get(e.date)!;
     await sql`
-      insert into entry (session_id, exercise_id, metric_type, metric_value, load_type, load_value, load_unit, per_side, notes)
-      values (${session_id}, ${exercise_id}, ${e.metric_type}, ${e.metric_value}, ${e.load_type}, ${e.load_value}, 'kg', ${e.per_side}, ${NOTE})
+      insert into entry (session_id, exercise_id, metric_type, metric_value, load_type, load_value, load_unit, notes)
+      values (${session_id}, ${exercise_id}, ${e.metric_type}, ${e.metric_value}, ${e.load_type}, ${e.load_value}, 'kg', ${NOTE})
       on conflict (session_id, exercise_id) do update set
         metric_type = excluded.metric_type, metric_value = excluded.metric_value,
-        load_type = excluded.load_type, load_value = excluded.load_value, per_side = excluded.per_side
+        load_type = excluded.load_type, load_value = excluded.load_value
     `;
     n++;
   }

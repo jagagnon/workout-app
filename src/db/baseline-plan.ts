@@ -16,7 +16,6 @@ export interface PlanEntry {
   load_value: number | null;
   metric_type: "reps" | "seconds" | "meters";
   metric_value: number;
-  per_side: boolean;
 }
 export interface BaselinePlan {
   newExercises: NewExercise[];
@@ -54,7 +53,6 @@ export function buildBaselinePlan(records: PrBaseline[], registry: ExerciseRow[]
       load_value: r.load_value,
       metric_type,
       metric_value: r.metric_value,
-      per_side: r.per_side ?? false,
     });
     dates.add(r.date);
   }

@@ -2,7 +2,7 @@ import { sql } from "../db/client";
 
 export async function exerciseProgression(canonicalName: string) {
   return (await sql`
-    select s.date, s.type as stimulus, e.metric_value, e.metric_type, e.load_type, e.load_value, e.load_unit, e.per_side
+    select s.date, s.type as stimulus, e.metric_value, e.metric_type, e.load_type, e.load_value, e.load_unit
     from entry e
     join session s on s.id = e.session_id
     join exercise x on x.id = e.exercise_id
@@ -111,7 +111,7 @@ export async function recentActuals(region: "U" | "L", limit = 4) {
     select s.date, s.region, s.type, s.rpe, s.feel, s.mu_note,
            json_agg(json_build_object(
              'exercise', x.canonical_name, 'metric', e.metric_value, 'metric_type', e.metric_type,
-             'load_type', e.load_type, 'load_value', e.load_value, 'per_side', e.per_side,
+             'load_type', e.load_type, 'load_value', e.load_value,
              'sets', e.sets, 'skipped', e.skipped, 'notes', e.notes
            ) order by e.id) as entries
     from session s
@@ -142,7 +142,6 @@ export interface HistoryPoint {
   metric_type: string;
   load_type: string;
   load_value: number | null;
-  per_side: boolean;
   sets: number | null;
   notes: string | null;
 }
@@ -155,7 +154,7 @@ export async function recentPerExercise(names: string[], limit = 7) {
   return (await sql`
     with ranked as (
       select x.canonical_name, s.date, e.metric_value, e.metric_type,
-             e.load_type, e.load_value, e.per_side, e.sets, e.notes,
+             e.load_type, e.load_value, e.sets, e.notes,
              row_number() over (partition by e.exercise_id order by s.date desc, e.id desc) as rn
       from entry e
       join session s on s.id = e.session_id
@@ -165,7 +164,7 @@ export async function recentPerExercise(names: string[], limit = 7) {
     select canonical_name,
            json_agg(json_build_object(
              'date', date, 'metric_value', metric_value, 'metric_type', metric_type,
-             'load_type', load_type, 'load_value', load_value, 'per_side', per_side,
+             'load_type', load_type, 'load_value', load_value,
              'sets', sets, 'notes', notes
            ) order by date desc) as points
     from ranked

@@ -13,7 +13,7 @@ after(async () => {
 test("logPlan round-trips items", async () => {
   const items = [
     { block: "A", label: "A1", exercise: "Pull-ups", sets: 4, reps: "6-8",
-      tempo: "3-0-1-1", load_type: "added" as const, load_value: 5, per_side: false },
+      tempo: "3-0-1-1", load_type: "added" as const, load_value: 5 },
   ];
   const row = await logPlan({ date: DATE, region: "U", stimulus: "Strength", body: "A1: Pull-ups 4x6-8", items });
   assert.equal(row.items?.length, 1);

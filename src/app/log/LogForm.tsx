@@ -26,7 +26,6 @@ type Card = {
   reps: string;
   load_type: LoadType;
   load_value: string;   // always entered positive; assisted is negated on submit
-  per_side: boolean;
   metric_type: MetricType;
   skipped: boolean;
   note: string;
@@ -51,7 +50,7 @@ function blankCard(exercise: string, reg?: RegistryRow): Card {
     key: nextKey(), block: null, label: null, exercise,
     presc: null, sets: "", reps: "",
     load_type: reg?.default_load_type ?? "bodyweight", load_value: "",
-    per_side: false, metric_type: reg?.primary_metric ?? "reps",
+    metric_type: reg?.primary_metric ?? "reps",
     skipped: false, note: "",
   };
 }
@@ -59,27 +58,23 @@ function blankCard(exercise: string, reg?: RegistryRow): Card {
 // `body` carries no loads and the older plans carry no items at all, so a lift's
 // last logged load stands in — that is the number he is most likely to repeat or
 // nudge, and the whole point is that he arrives at a form he only has to tweak.
-// per_side rides along with the load, never from a different source: it is what the
-// number *means* (16kg total vs 16kg in each hand), so inheriting last session's load
-// while resetting the qualifier to false silently doubles or halves the entry.
+// A load is always the total lifted, however many hands carry it.
 function seedLoad(i: PlanItem, last?: HistoryPoint):
-  { load_type: LoadType; load_value: string; per_side: boolean } {
+  { load_type: LoadType; load_value: string } {
   if (i.load_type && i.load_type !== "bodyweight") {
     return {
       load_type: i.load_type,
       load_value: i.load_value != null ? String(Math.abs(i.load_value)) : "",
-      per_side: i.per_side ?? false,
     };
   }
-  if (i.load_type === "bodyweight") return { load_type: "bodyweight", load_value: "", per_side: false };
+  if (i.load_type === "bodyweight") return { load_type: "bodyweight", load_value: "" };
   if (last) {
     return {
       load_type: last.load_type as LoadType,
       load_value: last.load_value != null ? String(Math.abs(last.load_value)) : "",
-      per_side: last.per_side,
     };
   }
-  return { load_type: "bodyweight", load_value: "", per_side: i.per_side ?? false };
+  return { load_type: "bodyweight", load_value: "" };
 }
 
 function cardsFromPlan(items: PlanItem[], history: Record<string, HistoryPoint[]>): Card[] {
@@ -228,7 +223,6 @@ export function LogForm({ date, plan, items, registry, history }: {
           metric_type: c.metric_type,
           load_type: c.load_type,
           load_value: signedLoad(c),
-          per_side: c.per_side,
           sets: c.sets === "" ? null : Number(c.sets),
           skipped: c.skipped,
           notes: c.note.trim() || undefined,
@@ -494,22 +488,8 @@ function LogCard({ card: c, byFamily, points, result, onPatch, onSwap, onRemove 
               // it external — same button, no need to rewrite what it asked for.
               onChange={(v) => onPatch({
                 load_type: v === "added" && c.load_type === "external" ? "external" : (v as LoadType),
-                // per_side qualifies a number that no longer exists once the lift is
-                // bodyweight, and a stale true is invisible here but wrong in the data.
-                ...(v === "bodyweight" ? { per_side: false } : {}),
               })}
             />
-            {/* Only meaningful next to a weight, and labelled with what it asserts:
-                "/side" reads as decoration, "each side" forces the 16-vs-32 decision. */}
-            {c.load_type !== "bodyweight" && (
-              <button
-                type="button"
-                className={`log-skip log-side${c.per_side ? " on" : ""}`}
-                onClick={() => onPatch({ per_side: !c.per_side })}
-              >
-                {c.per_side ? "each side" : "total"}
-              </button>
-            )}
           </div>
 
           {showNote || c.note ? (
@@ -528,7 +508,7 @@ function LogCard({ card: c, byFamily, points, result, onPatch, onSwap, onRemove 
                   {points.slice(0, 5).map((p, i) => (
                     <div key={i} className="log-hist-row">
                       <span>{fmtDate(p.date)}</span>
-                      <span>{formatLoad(p.load_type as LoadType, p.load_value, "kg", p.per_side)}</span>
+                      <span>{formatLoad(p.load_type as LoadType, p.load_value, "kg")}</span>
                       <span>
                         {p.sets ? `${p.sets} × ` : ""}{p.metric_value}
                         {p.metric_type === "seconds" ? "s" : p.metric_type === "meters" ? "m" : ""}

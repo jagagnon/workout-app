@@ -14,7 +14,6 @@ const entrySchema = z.object({
   load_type: z.enum(["added", "assisted", "external", "bodyweight"]),
   load_value: z.number().nullable().optional(),
   load_unit: z.string().optional(),
-  per_side: z.boolean().optional(),
   notes: z.string().optional(),
   sets: z.number().nullable().optional(),
   skipped: z.boolean().optional().describe(
@@ -34,7 +33,6 @@ const planItemSchema = z.object({
   load_type: z.enum(["added", "assisted", "external", "bodyweight"]).optional(),
   load_value: z.number().nullable().optional(),
   metric_type: z.enum(["reps", "seconds", "meters"]).optional(),
-  per_side: z.boolean().optional(),
   cue: z.string().nullable().optional(),
 });
 

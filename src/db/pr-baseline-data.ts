@@ -13,7 +13,6 @@ export interface PrBaseline {
   load_value: number | null;
   metric_value: number;        // reps unless metric_type set; 1 = weight-only placeholder
   metric_type?: MetricType;    // default "reps"
-  per_side?: boolean;
   aliases?: string[];          // used only when the exercise must be created
 }
 
@@ -25,11 +24,11 @@ export const PR_BASELINE: PrBaseline[] = [
   { exercise: "Dips", date: "2026-04-02", load_type: "bodyweight", load_value: null, metric_value: 13 },
   { exercise: "Pull-ups", date: "2026-04-02", load_type: "added", load_value: 5, metric_value: 10 },
   { exercise: "Push-ups", date: "2026-03-28", load_type: "added", load_value: 15, metric_value: 1 },
-  { exercise: "Bulgarian split squat", date: "2026-05-06", load_type: "external", load_value: 12, metric_value: 1, per_side: true },
+  { exercise: "Bulgarian split squat", date: "2026-05-06", load_type: "external", load_value: 12, metric_value: 1 },
   { exercise: "Goblet cossack squat", date: "2026-04-19", load_type: "external", load_value: 8, metric_value: 1 },
-  { exercise: "Single leg RDL", date: "2026-05-15", load_type: "external", load_value: 4, metric_value: 1, per_side: true },
-  { exercise: "Single-arm farmer's carry", date: "2026-05-06", load_type: "external", load_value: 20, metric_value: 1, metric_type: "meters", per_side: true },
-  { exercise: "Single-arm landmine press", date: "2026-05-31", load_type: "external", load_value: 27.5, metric_value: 1, per_side: true },
+  { exercise: "Single leg RDL", date: "2026-05-15", load_type: "external", load_value: 4, metric_value: 1 },
+  { exercise: "Single-arm farmer's carry", date: "2026-05-06", load_type: "external", load_value: 20, metric_value: 1, metric_type: "meters" },
+  { exercise: "Single-arm landmine press", date: "2026-05-31", load_type: "external", load_value: 27.5, metric_value: 1 },
   { exercise: "Straight-arm pulldown", date: "2026-03-16", load_type: "external", load_value: 20, metric_value: 1 },
   { exercise: "Kneeling KB press", date: "2026-05-31", load_type: "external", load_value: 8, metric_value: 1 },
 
@@ -45,7 +44,7 @@ export const PR_BASELINE: PrBaseline[] = [
   { exercise: "Pelvic drops", date: "2026-06-01", load_type: "external", load_value: 10, metric_value: 1, aliases: ["pelvic drop"] },
   { exercise: "Reverse lunge", date: "2026-03-30", load_type: "external", load_value: 16, metric_value: 1 },
   { exercise: "Seated machine row", date: "2026-03-31", load_type: "external", load_value: 26, metric_value: 1 },
-  { exercise: "Seated single arm row", date: "2026-03-16", load_type: "external", load_value: 15.5, metric_value: 1, per_side: true, aliases: ["seated single-arm row"] },
+  { exercise: "Seated single arm row", date: "2026-03-16", load_type: "external", load_value: 15.5, metric_value: 1, aliases: ["seated single-arm row"] },
   { exercise: "Single leg deficit heel raise", date: "2026-05-06", load_type: "external", load_value: 8, metric_value: 1, aliases: ["single-leg deficit heel raise", "deficit heel raise"] },
   { exercise: "Single-hip thrust", date: "2026-03-30", load_type: "external", load_value: 7, metric_value: 1, aliases: ["single leg hip thrust", "single-leg hip thrust"] },
   { exercise: "Step-ups", date: "2026-05-20", load_type: "external", load_value: 16, metric_value: 1, aliases: ["step up", "step-up"] },

@@ -23,17 +23,14 @@ description: >
 
 ## Logging a session
 1. Parse Julien's dump into entries. Each exercise → `{exercise, metric, metric_type?,
-   load_type, load_value?, per_side?, sets?, skipped?}`.
+   load_type, load_value?, sets?, skipped?}`.
    - `sets` = sets actually performed (`metric` stays the best set). Optional.
    - `skipped: true` for a prescribed lift he deliberately didn't do — send the row
      with `metric: 0` rather than omitting it. It's kept as an adherence signal and
      excluded from every PR/progression query.
-   - `per_side` describes the **load**, not the reps: `true` only when Julien held two
-     implements at once, one per hand, in which case `load_value` is what a single
-     implement weighs and the real load is double. One bell, one band, one landmine,
-     one handle, or bodyweight is `false`, however unilateral the movement — a 16kg
-     suitcase split squat is `16, false`; 10kg in each hand is `10, true`. "3x8/side"
-     in his dump is reps per leg and must not set it.
+   - `load_value` is always the **total** lifted, however many hands carry it: 10kg in
+     each hand is `20`. "3x8/side" in his dump is reps per leg and never changes the
+     number. If which hand held what matters, put it in `notes`.
    - `+Xkg` → load_type `added`, load_value `X`.
    - `-Xkg` / "banded" / "assisted" → load_type `assisted`, load_value `-X`.
    - bare weight on a weighted movement (goblet / KB / landmine) → `external`, load_value `X`.

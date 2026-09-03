@@ -43,20 +43,19 @@ test("a seconds suffix sets the metric, and /side is not part of the name", () =
   const f2 = parsePlanBody(UPPER).find((i) => i.label === "F2")!;
   assert.equal(f2.metric_type, "seconds");
   assert.equal(f2.reps, "10-12");
-  // "10-12s/side" is reps per leg. per_side qualifies the *load*, so it stays false.
-  assert.equal(f2.per_side, false);
   assert.equal(f2.exercise, "Kneeling pallof press");
 });
 
-test("per_side is set only when /side attaches to a weight", () => {
-  const two = parsePlanBody("A1: Front foot elevated split squat 10kg/side 3x8")[0];
-  assert.equal(two.per_side, true, "a bell in each hand");
-  assert.equal(two.load_value, 10);
+// "/side" is a reps-per-leg annotation and carries no load information, so it is
+// stripped from the name and never changes the number.
+test("/side is stripped wherever it appears, and never alters the load", () => {
+  const a = parsePlanBody("A1: Front foot elevated split squat 10kg/side 3x8")[0];
+  assert.equal(a.load_value, 10);
+  assert.equal(a.exercise, "Front foot elevated split squat");
 
-  const one = parsePlanBody("A1: Bulgarian split squat 16kg 3x8/side")[0];
-  assert.equal(one.per_side, false, "reps per leg says nothing about the load");
-  assert.equal(one.load_value, 16);
-  assert.equal(one.exercise, "Bulgarian split squat");
+  const b = parsePlanBody("A1: Bulgarian split squat 16kg 3x8/side")[0];
+  assert.equal(b.load_value, 16);
+  assert.equal(b.exercise, "Bulgarian split squat");
 });
 
 test("Lower days: inline kg becomes a load, not part of the name", () => {
@@ -76,7 +75,6 @@ test("an explicit 'bodyweight' wins over any load seeding", () => {
   const step = parsePlanBody(LOWER).find((i) => i.label === "B1")!;
   assert.equal(step.exercise, "Step throughs");
   assert.equal(step.load_type, "bodyweight");
-  assert.equal(step.per_side, false);
 });
 
 test("both × and x separate sets from reps", () => {
