@@ -37,8 +37,8 @@ export function LadderChart({ data }: { data: Pt[] }) {
       <AreaChart data={data} margin={{ top: 20, right: 14, bottom: 4, left: 8 }}>
         <defs>
           <linearGradient id="ladderFill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#ff5a1f" stopOpacity={0.35} />
-            <stop offset="100%" stopColor="#ff5a1f" stopOpacity={0} />
+            <stop offset="0%" stopColor="var(--accent)" stopOpacity={0.35} />
+            <stop offset="100%" stopColor="var(--accent)" stopOpacity={0} />
           </linearGradient>
         </defs>
         {/* Spaced by real elapsed time: a 17-day layoff must not read like a 2-day turnaround. */}
@@ -50,30 +50,30 @@ export function LadderChart({ data }: { data: Pt[] }) {
           ticks={data.map((d) => d.t)}
           tickFormatter={fmtTick}
           tickLine={false}
-          axisLine={{ stroke: "#26262f" }}
+          axisLine={{ stroke: "var(--line)" }}
           minTickGap={24}
           padding={{ left: 20, right: 20 }}
         />
         <YAxis domain={[min, max]} ticks={ticks} tickFormatter={(v) => `${v}kg`} tickLine={false} axisLine={false} width={56} allowDecimals={false} interval={0} />
         <ReferenceLine
           y={0}
-          stroke="#6fd0e6"
+          stroke="var(--ref)"
           strokeDasharray="5 5"
           strokeOpacity={0.85}
-          label={{ value: "BODYWEIGHT", position: "insideBottomRight", fill: "#6fd0e6", fontSize: 9, letterSpacing: 1 }}
+          label={{ value: "BODYWEIGHT", position: "insideBottomRight", fill: "var(--ref)", fontSize: 9, letterSpacing: 1 }}
         />
-        <Tooltip content={<Tip />} cursor={{ stroke: "#3a3a47" }} />
+        <Tooltip content={<Tip />} cursor={{ stroke: "var(--line-bright)" }} />
         <Area type="monotone" dataKey="kg" stroke="none" fill="url(#ladderFill)" isAnimationActive={false} />
         <Line
           type="monotone"
           dataKey="kg"
-          stroke="#ff5a1f"
+          stroke="var(--accent)"
           strokeWidth={2.5}
-          dot={{ r: 3, fill: "#ff5a1f", stroke: "#0a0a0c", strokeWidth: 1.5 }}
-          activeDot={{ r: 5, fill: "#ff5a1f", stroke: "#0a0a0c", strokeWidth: 2 }}
+          dot={{ r: 3, fill: "var(--accent)", stroke: "var(--bg)", strokeWidth: 1.5 }}
+          activeDot={{ r: 5, fill: "var(--accent)", stroke: "var(--bg)", strokeWidth: 2 }}
         >
           {/* Load alone hides reps gained at a fixed assist — annotate each session. */}
-          <LabelList dataKey="reps" position="top" offset={10} fill="#8a8a99" fontSize={10} />
+          <LabelList dataKey="reps" position="top" offset={10} fill="var(--text-dim)" fontSize={10} />
         </Line>
       </AreaChart>
     </ResponsiveContainer>

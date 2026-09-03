@@ -53,8 +53,8 @@ function MiniChart({ data, tickFormatter, tooltip }: {
       <AreaChart data={data} margin={{ top: 12, right: 14, bottom: 4, left: 8 }}>
         <defs>
           <linearGradient id="stimFill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#ff5a1f" stopOpacity={0.35} />
-            <stop offset="100%" stopColor="#ff5a1f" stopOpacity={0} />
+            <stop offset="0%" stopColor="var(--accent)" stopOpacity={0.35} />
+            <stop offset="100%" stopColor="var(--accent)" stopOpacity={0} />
           </linearGradient>
         </defs>
         {/* Spaced by real elapsed time, so training gaps are visible rather than flattened. */}
@@ -66,20 +66,20 @@ function MiniChart({ data, tickFormatter, tooltip }: {
           ticks={data.map((d) => d.t)}
           tickFormatter={fmtTick}
           tickLine={false}
-          axisLine={{ stroke: "#26262f" }}
+          axisLine={{ stroke: "var(--line)" }}
           minTickGap={24}
           padding={{ left: 20, right: 20 }}
         />
         <YAxis domain={[min, max]} ticks={ticks} tickFormatter={tickFormatter} tickLine={false} axisLine={false} width={56} allowDecimals={false} interval={0} />
-        <Tooltip content={tooltip} cursor={{ stroke: "#3a3a47" }} />
+        <Tooltip content={tooltip} cursor={{ stroke: "var(--line-bright)" }} />
         <Area type="monotone" dataKey="v" stroke="none" fill="url(#stimFill)" isAnimationActive={false} />
         <Line
           type="monotone"
           dataKey="v"
-          stroke="#ff5a1f"
+          stroke="var(--accent)"
           strokeWidth={2.5}
-          dot={{ r: 3, fill: "#ff5a1f", stroke: "#0a0a0c", strokeWidth: 1.5 }}
-          activeDot={{ r: 5, fill: "#ff5a1f", stroke: "#0a0a0c", strokeWidth: 2 }}
+          dot={{ r: 3, fill: "var(--accent)", stroke: "var(--bg)", strokeWidth: 1.5 }}
+          activeDot={{ r: 5, fill: "var(--accent)", stroke: "var(--bg)", strokeWidth: 2 }}
           connectNulls
         />
       </AreaChart>

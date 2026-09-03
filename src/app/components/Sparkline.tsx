@@ -29,21 +29,21 @@ export function Sparkline({ data, fmt, height = 36 }: {
       <AreaChart data={data} margin={{ top: 4, right: 2, bottom: 2, left: 2 }}>
         <defs>
           <linearGradient id="prSpark" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#ff5a1f" stopOpacity={0.3} />
-            <stop offset="100%" stopColor="#ff5a1f" stopOpacity={0} />
+            <stop offset="0%" stopColor="var(--accent)" stopOpacity={0.3} />
+            <stop offset="100%" stopColor="var(--accent)" stopOpacity={0} />
           </linearGradient>
         </defs>
         {/* Hidden, but numeric: spaces points by real elapsed time rather than by index. */}
         <XAxis dataKey="t" type="number" scale="time" domain={["dataMin", "dataMax"]} hide />
-        <Tooltip content={<Tip fmt={fmt} />} cursor={{ stroke: "#3a3a47" }} />
+        <Tooltip content={<Tip fmt={fmt} />} cursor={{ stroke: "var(--line-bright)" }} />
         <Area type="monotone" dataKey="v" stroke="none" fill="url(#prSpark)" isAnimationActive={false} />
         <Line
           type="monotone"
           dataKey="v"
-          stroke="#ff5a1f"
+          stroke="var(--accent)"
           strokeWidth={2}
           dot={false}
-          activeDot={{ r: 3.5, fill: "#ff5a1f", stroke: "#0a0a0c", strokeWidth: 1.5 }}
+          activeDot={{ r: 3.5, fill: "var(--accent)", stroke: "var(--bg)", strokeWidth: 1.5 }}
           isAnimationActive={false}
         />
       </AreaChart>
