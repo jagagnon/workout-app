@@ -50,7 +50,7 @@ export default async function LogPage({
   const history = await recentPerExercise(items.map((i) => i.exercise).filter(Boolean));
 
   return (
-    <main className="wrap">
+    <main className="wrap log-page">
       <header className="topbar rise">
         <div>
           <Link href="/" className="back">&larr; Dashboard</Link>

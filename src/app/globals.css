@@ -304,10 +304,12 @@ a { color: inherit; text-decoration: none; }
 .goalrail { margin-left: 0; margin-right: 0;
   padding-left: var(--gutter); padding-right: var(--gutter); }
 .card { padding-left: var(--gutter); padding-right: var(--gutter); }
-.grid { padding-left: var(--gutter); padding-right: var(--gutter); }
-/* Cards inside the grid are already inside the gutter — reset to a plain inset. */
-.grid > .card { padding-left: 22px; padding-right: 22px; }
-.hero-chart { padding-left: var(--gutter); padding-right: var(--gutter); }
+/* The grid is no longer a boxed column: every card is its own full-width band,
+   so the grid contributes no inset of its own and each plate carries the gutter. */
+.grid { grid-template-columns: 1fr; gap: 0; margin-top: 0;
+  padding-left: 0; padding-right: 0; }
+.grid > .card { padding-left: var(--gutter); padding-right: var(--gutter); }
+.grid > .card:nth-of-type(even) { background: var(--bg-2); }
 
 @media (max-width: 680px) {
   .grid { grid-template-columns: 1fr; }
@@ -505,7 +507,7 @@ a { color: inherit; text-decoration: none; }
   bottom: calc(100% + 8px);
   left: 50%;
   transform: translateX(-50%) translateY(4px);
-  background: rgba(10, 10, 13, 0.92);
+  background: rgba(11, 14, 24, 0.92);
   backdrop-filter: blur(8px);
   border: 1px solid var(--line-bright);
   border-radius: 8px;
@@ -707,7 +709,7 @@ a { color: inherit; text-decoration: none; }
 .recharts-cartesian-axis-tick text { fill: var(--text-faint); font-family: var(--font-mono); font-size: 10px; }
 .recharts-tooltip-wrapper { outline: none; }
 .tip {
-  background: rgba(10, 10, 13, 0.92);
+  background: rgba(11, 14, 24, 0.92);
   backdrop-filter: blur(8px);
   border: 1px solid var(--line-bright);
   border-radius: 8px;
@@ -914,7 +916,7 @@ a { color: inherit; text-decoration: none; }
      its remaining bottom padding to reach the true viewport edge. */
   margin: 18px 0 -96px;
   padding: 14px 22px 22px;
-  background: rgba(10, 10, 13, 0.94);
+  background: rgba(11, 14, 24, 0.94);
   backdrop-filter: blur(10px);
   border-top: 1px solid var(--line);
 }
@@ -996,3 +998,18 @@ a { color: inherit; text-decoration: none; }
 /* A skipped lift stays in the session log as an adherence signal — dimmed, and
    never rendered as a zero-rep result. */
 .skipped-mark { color: var(--text-faint); font-style: italic; }
+
+/* The logger is a form read at arm's length while holding a weight, so its
+   contents are held off the bezel. The inset lives on the page container, not on
+   the children: several logger blocks are `width: 100%`, and a horizontal margin
+   on those resolves their width against the FULL container and overflows by
+   exactly the margin. Padding here makes 100% mean "the padded box" instead.
+   The sticky footer cancels it with an equal negative margin so the action bar
+   still spans the screen — a fixed value on both, so they cancel exactly. */
+.log-page { padding-left: 20px; padding-right: 20px; }
+.log-page .log-footer { margin-left: -20px; margin-right: -20px; }
+/* .card carries the dashboard's much wider gutter; inside the logger that would
+   strand the content in the middle of its own box. */
+.log-page > .card { padding-left: 18px; padding-right: 18px; }
+/* .topbar brings its own gutter — don't inset it twice. */
+.log-page > .topbar { padding-left: 0; padding-right: 0; }
