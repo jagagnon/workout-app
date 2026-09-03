@@ -45,8 +45,13 @@ create or replace view v_prs as
 select
   e.exercise_id,
   x.canonical_name,
-  max(e.load_value)  filter (where e.load_type in ('added','external')) as max_added_load,
-  max(e.load_value)  filter (where e.load_type = 'assisted')           as min_assist_load,
+  -- per_side means load_value is what ONE implement weighs and two are held, so the
+  -- real load is double. Without this a 10kg/side split squat ties a 10kg one on the
+  -- board despite being twice the work.
+  max(e.load_value * case when e.per_side then 2 else 1 end)
+    filter (where e.load_type in ('added','external')) as max_added_load,
+  max(e.load_value * case when e.per_side then 2 else 1 end)
+    filter (where e.load_type = 'assisted')            as min_assist_load,
   max(e.metric_value)                                                   as max_metric
 from entry e
 join exercise x on x.id = e.exercise_id
@@ -97,8 +102,13 @@ create or replace view v_prs as
 select
   e.exercise_id,
   x.canonical_name,
-  max(e.load_value)  filter (where e.load_type in ('added','external')) as max_added_load,
-  max(e.load_value)  filter (where e.load_type = 'assisted')           as min_assist_load,
+  -- per_side means load_value is what ONE implement weighs and two are held, so the
+  -- real load is double. Without this a 10kg/side split squat ties a 10kg one on the
+  -- board despite being twice the work.
+  max(e.load_value * case when e.per_side then 2 else 1 end)
+    filter (where e.load_type in ('added','external')) as max_added_load,
+  max(e.load_value * case when e.per_side then 2 else 1 end)
+    filter (where e.load_type = 'assisted')            as min_assist_load,
   max(e.metric_value)                                                   as max_metric
 from entry e
 join exercise x on x.id = e.exercise_id
