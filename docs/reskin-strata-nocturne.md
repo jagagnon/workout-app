@@ -3,6 +3,11 @@
 Retheme the app from the current orange/graphite "drafting" look to **Strata Nocturne**:
 a stack of indigo plates, each with a machined lip catching light from a single source.
 
+The palette keeps a **warm burnt orange as the accent** — the work done: load lifted, upper
+days, the ladder trace — against a cool **periwinkle counterpoint** for the goal not yet
+reached: the bodyweight threshold line, assist figures, lower days. Orange leads; the
+periwinkle recedes. Do not let the cool colour out-shout the warm one.
+
 Reference build (the target, with real data):
 https://claude.ai/code/artifact/2b8a3e8b-f1b5-4f9d-a4a2-159c0af09db9
 
@@ -102,22 +107,31 @@ card-shaped. Fully reversible; ship it and look at it before going further.
 | `--text` | `#efeadd` | `#eef0f8` |
 | `--text-dim` | `#9a958b` | `#8a93b2` |
 | `--text-faint` | `#5f5b54` | `#5b6486` |
-| `--accent` | `#ff5a1f` | `#8c9bff` |
-| `--accent-hi` | `#ff7a42` | `#a8b3ff` |
-| `--accent-deep` | `#e23c00` | `#6b7ae8` |
-| `--accent-soft` | `rgba(255,90,31,.12)` | `rgba(140,155,255,.12)` |
-| `--accent-glow` | `rgba(255,90,31,.5)` | `rgba(140,155,255,.5)` |
-| `--ref` | `#6fd0e6` | `#ff9e7a` |
+| `--accent` | `#ff5a1f` | `#d9703f` |
+| `--accent-hi` | `#ff7a42` | `#ea8354` |
+| `--accent-deep` | `#e23c00` | `#b0562c` |
+| `--accent-soft` | `rgba(255,90,31,.12)` | `rgba(217,112,63,.12)` |
+| `--accent-glow` | `rgba(255,90,31,.5)` | `rgba(217,112,63,.45)` |
+| `--ref` | `#6fd0e6` | `#8c9bff` |
 | `--good` | `#8bd17c` | `#7fd1a8` |
 | `--radius` | `14px` | `2px` |
 | `--font-display` | `"Anton"` | `"Fraunces", Georgia, serif` |
 | `--font-body` | `"Archivo"` | `"Karla", system-ui, sans-serif` |
 | `--font-mono` | `"JetBrains Mono"` | `"Space Mono", ui-monospace, monospace` |
 
-Add one new token for the plate lip:
+Add two new tokens — the plate lip, and the cool counterpoint as a solid fill:
 ```css
---lip: rgba(140, 155, 255, 0.16);
+--lip: rgba(140, 155, 255, 0.16);   /* cool light on the machined edge */
+--ref-fill: #6b78cc;                /* --ref dropped in chroma, for solid fills */
 ```
+
+The lip stays **cool** even though the accent is warm: it reads as light on steel, and
+keeping it cool means the burnt orange is the only warm thing on the page. That is
+deliberate — do not warm it to "match" the accent.
+
+`--ref` at full brightness is fine as a thin line (the bodyweight threshold) or as small
+text (assist figures). As a **solid fill** it out-shouts the accent, so lower-body calendar
+cells and any other filled block use `--ref-fill`.
 
 Replace `--shadow-card` entirely. Plates are not floating cards — they are stacked slabs
 lit from above, so the drop shadow goes and only the lip remains:
@@ -132,19 +146,24 @@ bleeding through in seven places.
 
 | Line | Current | Change to |
 |---|---|---|
-| 41 | `rgba(255, 90, 31, 0.11)` in `body` radial-gradient | `rgba(140, 155, 255, 0.13)` |
-| 42 | `rgba(255, 90, 31, 0.04)` in `body` radial-gradient | `rgba(140, 155, 255, 0.04)` |
+| 41 | `rgba(255, 90, 31, 0.11)` in `body` radial-gradient | `rgba(217, 112, 63, 0.13)` |
+| 42 | `rgba(255, 90, 31, 0.04)` in `body` radial-gradient | `rgba(217, 112, 63, 0.04)` |
 | 76 | `::selection { ... color: #0a0a0c }` | `color: var(--bg)` |
-| 266 | `drop-shadow(... rgba(255, 90, 31, 0.25))` | `rgba(140, 155, 255, 0.25)` |
-| 440 | `.tag.u { border-color: rgba(255, 90, 31, 0.4) }` | `rgba(140, 155, 255, 0.4)` |
-| 546 | `border-color: rgba(255, 90, 31, 0.4)` | `rgba(140, 155, 255, 0.4)` |
+| 266 | `drop-shadow(... rgba(255, 90, 31, 0.25))` | `rgba(217, 112, 63, 0.25)` |
+| 440 | `.tag.u { border-color: rgba(255, 90, 31, 0.4) }` | `rgba(217, 112, 63, 0.4)` |
+| 546 | `border-color: rgba(255, 90, 31, 0.4)` | `rgba(217, 112, 63, 0.4)` |
 | 926 | `color: #0a0a0c` | `var(--bg)` |
 
 Verify none remain:
 ```bash
 grep -n '255, *90, *31\|#ff5a1f\|#0a0a0c\|#6fd0e6' src/app/globals.css
 ```
-Must return nothing.
+Must return nothing. Note this greps the **old** orange `#ff5a1f` / `rgba(255,90,31,...)`;
+the new accent `#d9703f` is a different, deeper burnt orange and is expected to appear.
+
+**Do not skip this step because "the accent is still orange."** The new burnt orange is a
+distinct value and every one of these seven sites must move to it — a half-migrated palette
+with two oranges in it is worse than either one alone.
 
 ### 1c. Swap the fonts in `src/app/layout.tsx`
 
@@ -286,7 +305,7 @@ Recharts passes these straight through as SVG attributes, and SVG accepts `var()
 | `#0a0a0c` | 5 | `var(--bg)` |
 | `#3a3a47` | 3 | `var(--line-bright)` |
 | `#26262f` | 2 | `var(--line)` |
-| `#6fd0e6` | 2 | `var(--ref)` |
+| `#6fd0e6` | 2 | `var(--ref)` — the bodyweight line, now periwinkle |
 | `#8a8a99` | 1 | `var(--text-dim)` |
 
 Files: `src/app/components/LadderChart.tsx` (10), `Sparkline.tsx` (5),
@@ -326,8 +345,9 @@ Walk each route and fix what looks wrong. In this order:
    Change to `flex: 1 1 auto; min-width: 0` with the numeric columns fixed instead, or
    reduce to `width: 40%`.
 2. `/sessions` — `src/app/sessions/page.tsx` (64 lines) + CSS 370–449 and the calendar
-   450–526. Check the `.tag.u` / `.tag.l` region pills read as periwinkle/coral, matching
-   the reference build's upper/lower semantics.
+   450–526. Check the `.tag.u` / `.tag.l` region pills read as burnt orange (upper)
+   and periwinkle (lower), matching the reference build's semantics. If the lower pill is
+   a solid fill rather than an outline, use `--ref-fill`, not `--ref`.
 3. `/exercise/[id]` — 62 lines + stimulus tabs (CSS 527–549).
 4. **`/log` last.** `src/app/log/LogForm.tsx` is 558 lines with its own dense sub-system
    (CSS 733–997: pills, toggles, per-set rows, the skip control). This is the surface used
@@ -384,11 +404,13 @@ Vercel deploy reached READY.
 6. `padding` shorthand on a shared element wipes the width container's horizontal padding
    (Phase 2d).
 7. Recharts gradient `stopColor` and `LabelList fill` may not accept `var()` (Phase 3).
-8. `.topbar` has no `flex-wrap` and `.wordmark`'s clamp was sized for a condensed face —
+8. `--good` (`#7fd1a8`) is a mint that exists only for semantic success states. It is not
+   part of the two-colour accent system and must not be used decoratively.
+9. `.topbar` has no `flex-wrap` and `.wordmark`'s clamp was sized for a condensed face —
    the countdown overflows on a phone after the font swap (Phase 1d).
-9. `overflow-x: hidden` on `body` hides overflow instead of preventing it. Never treat the
+10. `overflow-x: hidden` on `body` hides overflow instead of preventing it. Never treat the
    absence of a visible scrollbar as proof; check `scrollWidth` (Phase 2e).
-10. `.pr-name` has a hard `width: 150px` and `.log-field` a `min-width: 78px` — both are
+11. `.pr-name` has a hard `width: 150px` and `.log-field` a `min-width: 78px` — both are
     fixed pixels in flex rows and both bite at 360px (Phase 4).
-11. Browser-pane screenshots can return blank or stale frames. Verify geometry in JS before
+12. Browser-pane screenshots can return blank or stale frames. Verify geometry in JS before
     concluding a page is broken.
