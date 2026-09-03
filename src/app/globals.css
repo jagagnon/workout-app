@@ -877,9 +877,12 @@ a { color: inherit; text-decoration: none; }
 
 .log-hist { display: flex; gap: 10px; align-items: center; margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--line); }
 .log-hist-rows { flex: 1; min-width: 0; }
+/* A grid, not space-between: with flex the load sits wherever its own width
+   puts it, so BW, +5kg and -10kg each land on a different x. Fixed tracks with
+   the numbers right-aligned make the column scannable down the strip. */
 .log-hist-row {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
   gap: 10px;
   font-family: var(--font-mono);
   font-size: 11px;
@@ -888,6 +891,11 @@ a { color: inherit; text-decoration: none; }
   padding: 2px 0;
 }
 .log-hist-row span:first-child { color: var(--text-faint); }
+.log-hist-row span:nth-child(2),
+.log-hist-row span:last-child { text-align: right; }
+/* The result column has to reserve its width, or a 12 pushes the load column
+   left and the alignment breaks on exactly the rows worth comparing. */
+.log-hist-row span:last-child { min-width: 4ch; }
 .log-hist-note { font-size: 11px; color: var(--text-faint); padding-top: 4px; line-height: 1.5; }
 .log-hist-spark { width: 90px; flex-shrink: 0; height: 36px; }
 .log-hist-empty { font-family: var(--font-mono); font-size: 11px; color: var(--text-faint); }
