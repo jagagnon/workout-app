@@ -36,7 +36,7 @@ export const PR_BASELINE: PrBaseline[] = [
   { exercise: "Banded step-down", date: "2026-05-01", load_type: "external", load_value: 8, metric_value: 1, aliases: ["banded step down", "step-down"] },
   { exercise: "Dead bugs", date: "2026-03-18", load_type: "external", load_value: 3, metric_value: 1, aliases: ["dead bug"] },
   { exercise: "Hip thrust isometric hold", date: "2026-05-15", load_type: "external", load_value: 20, metric_value: 1, metric_type: "seconds", aliases: ["hip thrust hold", "hip thrust isometric"] },
-  { exercise: "High pulls", date: "2026-03-28", load_type: "assisted", load_value: -15, metric_value: 1, aliases: ["high pull"] },
+  { exercise: "High pull-ups", date: "2026-03-28", load_type: "assisted", load_value: -15, metric_value: 1, aliases: ["high pull", "High pulls"] },
   { exercise: "Ipsilateral KB RDL to knee drive", date: "2026-05-01", load_type: "external", load_value: 4, metric_value: 1, aliases: ["ipsilateral kb rdl", "kb rdl to knee drive"] },
   { exercise: "Lunge to high knee", date: "2026-05-15", load_type: "external", load_value: 20, metric_value: 1 },
   { exercise: "Kickstand RDL", date: "2026-05-20", load_type: "external", load_value: 10, metric_value: 1, aliases: ["kickstand rdl"] },
