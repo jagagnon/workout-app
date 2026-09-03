@@ -4,6 +4,7 @@ import {
   AreaChart, Area, Line, XAxis, YAxis, Tooltip, ResponsiveContainer,
 } from "recharts";
 import { STIMULI } from "../../lib/types";
+import { fmtDay } from "../../lib/date-format";
 
 type Pt = { t: number; label: string; stimulus: string | null; load: number | null; metric: number; metricType: string };
 
@@ -35,8 +36,7 @@ function MetricTip({ active, payload, unit }: { active?: boolean; payload?: Arra
   );
 }
 
-const fmtTick = (t: number) =>
-  new Intl.DateTimeFormat("en-GB", { day: "2-digit", month: "short" }).format(new Date(t));
+const fmtTick = (t: number) => fmtDay(t);
 
 function MiniChart({ data, tickFormatter, tooltip }: {
   data: Array<{ t: number; label: string; v: number }>;

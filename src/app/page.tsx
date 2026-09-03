@@ -3,15 +3,14 @@ import { muscleUpContext, muscleUpLadder, prBoard, recentCalendar } from "../lib
 import { LadderChart } from "./components/LadderChart";
 import { PrBoard } from "./components/PrBoard";
 import { WorkoutCalendar } from "./components/WorkoutCalendar";
+import { fmtDay } from "../lib/date-format";
 
 export const dynamic = "force-dynamic";
 
 const GOAL = new Date("2026-12-01T00:00:00Z");
 const PROGRAM_START = new Date("2026-06-01T00:00:00Z");
 
-function fmtDate(d: unknown): string {
-  return new Intl.DateTimeFormat("en-GB", { day: "2-digit", month: "short" }).format(new Date(d as string));
-}
+const fmtDate = (d: unknown) => fmtDay(d as string);
 
 export default async function Home() {
   const [ladderRaw, prs, calendarRows, muCtx] = await Promise.all([

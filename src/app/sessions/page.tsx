@@ -2,12 +2,11 @@ import Link from "next/link";
 import { recentSessions } from "../../lib/progress";
 import { formatLoad } from "../../lib/load";
 import type { LoadType } from "../../lib/types";
+import { fmtDay } from "../../lib/date-format";
 
 export const dynamic = "force-dynamic";
 
-function fmtDate(d: unknown): string {
-  return new Intl.DateTimeFormat("en-GB", { day: "2-digit", month: "short" }).format(new Date(d as string));
-}
+const fmtDate = (d: unknown) => fmtDay(d as string);
 
 export default async function SessionsPage() {
   const sessions = await recentSessions(30);

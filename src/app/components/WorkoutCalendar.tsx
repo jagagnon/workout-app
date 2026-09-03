@@ -1,3 +1,5 @@
+import { fmtDayWeekday } from "../../lib/date-format";
+
 const WEEKS = 3;
 const DOW_LABELS = ["M", "T", "W", "T", "F", "S", "S"];
 
@@ -22,7 +24,7 @@ function isoDay(d: Date): string {
   return d.toISOString().slice(0, 10);
 }
 
-const fmtTip = new Intl.DateTimeFormat("en-GB", { weekday: "short", day: "2-digit", month: "short" });
+const fmtTip = { format: (d: Date) => fmtDayWeekday(d) };
 
 export function WorkoutCalendar({ rows }: { rows: CalendarRow[] }) {
   const today = utcDay(new Date());

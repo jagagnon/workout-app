@@ -2,6 +2,7 @@ import Link from "next/link";
 import { exerciseProgression } from "../../../lib/progress";
 import { STIMULI } from "../../../lib/types";
 import { StimulusProgressionChart } from "../../components/StimulusProgressionChart";
+import { fmtDay } from "../../../lib/date-format";
 
 // A stimulus split only earns its place when the lift is actually autoregulated by
 // stimulus — it carries load — and each tab still has enough sessions to show a trend.
@@ -26,9 +27,7 @@ function shouldSplitByStimulus(rows: Row[]): boolean {
   return [...counts.values()].filter((n) => n >= MIN_POINTS_PER_TAB).length >= 2;
 }
 
-function fmtDate(d: unknown): string {
-  return new Intl.DateTimeFormat("en-GB", { day: "2-digit", month: "short" }).format(new Date(d as string));
-}
+const fmtDate = (d: unknown) => fmtDay(d as string);
 
 export const dynamic = "force-dynamic";
 

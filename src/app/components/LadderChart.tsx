@@ -2,6 +2,7 @@
 import {
   AreaChart, Area, Line, LabelList, XAxis, YAxis, ReferenceLine, Tooltip, ResponsiveContainer,
 } from "recharts";
+import { fmtDay } from "../../lib/date-format";
 
 type Pt = { t: number; label: string; kg: number; reps: number };
 
@@ -20,8 +21,7 @@ function Tip({ active, payload }: { active?: boolean; payload?: Array<{ payload:
   );
 }
 
-const fmtTick = (t: number) =>
-  new Intl.DateTimeFormat("en-GB", { day: "2-digit", month: "short" }).format(new Date(t));
+const fmtTick = (t: number) => fmtDay(t);
 
 export function LadderChart({ data }: { data: Pt[] }) {
   if (!data.length) {

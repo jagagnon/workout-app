@@ -5,6 +5,7 @@ import { Sparkline } from "../components/Sparkline";
 import type { HistoryPoint } from "../../lib/progress";
 import type { PlanRow } from "../../lib/plans";
 import type { LoadType, MetricType, PlanItem } from "../../lib/types";
+import { fmtDay } from "../../lib/date-format";
 
 export interface RegistryRow {
   id: number;
@@ -112,9 +113,7 @@ function signedLoad(c: Card): number | null {
   return c.load_type === "assisted" ? -n : n;
 }
 
-function fmtDate(d: string): string {
-  return new Intl.DateTimeFormat("en-GB", { day: "2-digit", month: "short" }).format(new Date(d));
-}
+const fmtDate = (d: string) => fmtDay(d);
 
 type EntryResult = {
   canonical_name: string | null;

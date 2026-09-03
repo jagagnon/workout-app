@@ -3,6 +3,7 @@ import { Fragment } from "react";
 import Link from "next/link";
 import { Sparkline } from "./Sparkline";
 import { clusterByFamily } from "../../lib/family-groups";
+import { fmtDay } from "../../lib/date-format";
 
 type HistoryPoint = {
   date: string; load_type: string; load_value: number | null;
@@ -91,9 +92,7 @@ function currentFor(row: PrRow, bucket: Bucket, start: number): number {
   return row.max_metric == null ? start : Number(row.max_metric);
 }
 
-function fmtDate(d: string): string {
-  return new Intl.DateTimeFormat("en-GB", { day: "2-digit", month: "short" }).format(new Date(d));
-}
+const fmtDate = (d: string) => fmtDay(d);
 
 
 function DumbbellRow({
