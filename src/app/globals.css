@@ -620,8 +620,13 @@ a { color: inherit; text-decoration: none; }
 }
 .pr-row:hover { padding-left: 6px; }
 .pr-row:last-child { border-bottom: none; }
+/* The name is a label, not a column that should soak up the row. Letting it
+   flex-grow alongside the track split every row 50/50, so on a wide plate a
+   four-letter lift like "Dips" sat in 400px of empty space and every track
+   started at a different x. A capped basis keeps the tracks left-aligned with
+   each other, which is the whole point of a dumbbell chart. */
 .pr-name {
-  flex: 1 1 auto;
+  flex: 0 0 min(34%, 300px);
   min-width: 0;
   font-size: 13px;
   color: var(--text);
