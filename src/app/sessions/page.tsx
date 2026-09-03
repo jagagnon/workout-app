@@ -35,7 +35,7 @@ export default async function SessionsPage() {
               <details className="session-row" key={s.id}>
                 <summary>
                   <span className="date">{fmtDate(s.date)}</span>
-                  {s.region && <span className={`tag ${s.region === "U" ? "u" : ""}`}>{s.region === "U" ? "Upper" : "Lower"}</span>}
+                  {s.region && <span className={`tag ${s.region === "U" ? "u" : "l"}`}>{s.region === "U" ? "Upper" : "Lower"}</span>}
                   {s.type && <span className="tag">{s.type}</span>}
                   {s.rpe != null && <span className="tag">RPE {s.rpe}</span>}
                   <span className="cnt">{s.entries.length} {s.entries.length === 1 ? "lift" : "lifts"}</span>
