@@ -47,19 +47,6 @@ body {
   overflow-x: hidden;
 }
 
-/* blueprint grid — anchors the corner-tick motif on the cards */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  background-image:
-    linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
-  background-size: 46px 46px;
-  mask-image: radial-gradient(125% 100% at 50% 0%, #000 28%, transparent 88%);
-  z-index: 0;
-}
 /* fine film grain */
 body::after {
   content: "";
@@ -86,12 +73,16 @@ a { color: inherit; text-decoration: none; }
 *::-webkit-scrollbar { width: 9px; height: 9px; }
 *::-webkit-scrollbar-thumb { background: var(--line-bright); border-radius: 20px; border: 2px solid var(--bg); }
 
+/* Plates run edge to edge now, so .wrap no longer caps width or insets
+   content itself — that inset moves onto each element that needs one
+   (.topbar, .goalrail, and .card's own padding). Longhand top/bottom only:
+   a shorthand here would also zero the horizontal inset on anything that
+   ever shares this element. */
 .wrap {
   position: relative;
   z-index: 1;
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 34px 22px 96px;
+  padding-top: 34px;
+  padding-bottom: 96px;
 }
 
 /* ---- topbar ---- */
@@ -101,6 +92,8 @@ a { color: inherit; text-decoration: none; }
   align-items: flex-end;
   justify-content: space-between;
   gap: 20px;
+  padding-left: 22px;
+  padding-right: 22px;
   padding-bottom: 20px;
   margin-bottom: 26px;
   border-bottom: 1px solid var(--line);
@@ -164,7 +157,7 @@ a { color: inherit; text-decoration: none; }
   height: 3px;
   border-radius: 3px;
   background: var(--surface-2);
-  margin: 3px 0 26px;
+  margin: 3px 22px 26px;
   overflow: hidden;
 }
 .goalrail > i {
@@ -182,38 +175,24 @@ a { color: inherit; text-decoration: none; }
   background-size: 25% 100%;
 }
 
-/* ---- cards ---- */
+/* ---- cards: plates, lit from the top edge ---- */
 .card {
   position: relative;
-  background:
-    linear-gradient(180deg, rgba(255,255,255,0.015), transparent 40%),
-    linear-gradient(180deg, var(--surface) 0%, var(--bg-2) 100%);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
+  background: var(--surface);
+  border: none;
+  border-top: 1px solid var(--line);
+  border-radius: 0;
   padding: 22px;
   overflow: hidden;
   box-shadow: var(--shadow-card);
 }
-/* signature: drafting registration ticks in each corner */
-.card::before,
-.card::after {
-  content: "";
-  position: absolute;
-  width: 9px;
-  height: 9px;
-  pointer-events: none;
-  opacity: 0.5;
-}
-.card::before {
-  top: 9px; left: 9px;
-  border-top: 1px solid var(--line-bright);
-  border-left: 1px solid var(--line-bright);
-}
-.card::after {
-  bottom: 9px; right: 9px;
-  border-bottom: 1px solid var(--line-bright);
-  border-right: 1px solid var(--line-bright);
-}
+/* Alternating plates read as a stack. --bg-2 equals --bg (the night ground),
+   so an "even" plate recedes into the page rather than taking a second shade.
+   Scoped to full-width (.span2) plates only: applied to .card generally, two
+   plates sitting side by side in .grid (Current Assist / PR Board) fight each
+   other — one recedes into the background while its neighbour stays lit, which
+   reads as broken rather than as a stack. */
+.card.span2:nth-of-type(even) { background: var(--bg-2); }
 .card-title {
   display: flex;
   align-items: center;
@@ -913,7 +892,9 @@ a { color: inherit; text-decoration: none; }
   display: flex;
   flex-direction: column;
   gap: 10px;
-  margin: 18px -22px -96px;
+  /* .wrap is already full-bleed, so only the bottom needs to break out past
+     its remaining bottom padding to reach the true viewport edge. */
+  margin: 18px 0 -96px;
   padding: 14px 22px 22px;
   background: rgba(10, 10, 13, 0.94);
   backdrop-filter: blur(10px);
