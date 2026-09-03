@@ -59,19 +59,27 @@ function blankCard(exercise: string, reg?: RegistryRow): Card {
 // `body` carries no loads and the older plans carry no items at all, so a lift's
 // last logged load stands in — that is the number he is most likely to repeat or
 // nudge, and the whole point is that he arrives at a form he only has to tweak.
+// per_side rides along with the load, never from a different source: it is what the
+// number *means* (16kg total vs 16kg in each hand), so inheriting last session's load
+// while resetting the qualifier to false silently doubles or halves the entry.
 function seedLoad(i: PlanItem, last?: HistoryPoint):
-  { load_type: LoadType; load_value: string } {
+  { load_type: LoadType; load_value: string; per_side: boolean } {
   if (i.load_type && i.load_type !== "bodyweight") {
-    return { load_type: i.load_type, load_value: i.load_value != null ? String(Math.abs(i.load_value)) : "" };
+    return {
+      load_type: i.load_type,
+      load_value: i.load_value != null ? String(Math.abs(i.load_value)) : "",
+      per_side: i.per_side ?? false,
+    };
   }
-  if (i.load_type === "bodyweight") return { load_type: "bodyweight", load_value: "" };
+  if (i.load_type === "bodyweight") return { load_type: "bodyweight", load_value: "", per_side: false };
   if (last) {
     return {
       load_type: last.load_type as LoadType,
       load_value: last.load_value != null ? String(Math.abs(last.load_value)) : "",
+      per_side: last.per_side,
     };
   }
-  return { load_type: "bodyweight", load_value: "" };
+  return { load_type: "bodyweight", load_value: "", per_side: i.per_side ?? false };
 }
 
 function cardsFromPlan(items: PlanItem[], history: Record<string, HistoryPoint[]>): Card[] {
@@ -85,7 +93,6 @@ function cardsFromPlan(items: PlanItem[], history: Record<string, HistoryPoint[]
     // Pre-fill reps with the top of the prescribed range — the number he's aiming at.
     reps: topOfRange(i.reps) ?? "",
     ...seedLoad(i, history[i.exercise]?.[0]),
-    per_side: i.per_side ?? false,
     metric_type: i.metric_type ?? "reps",
     skipped: false,
     note: "",
@@ -449,7 +456,13 @@ function LogCard({ card: c, byFamily, points, result, onPatch, onSwap, onRemove 
         )}
       </div>
 
-      {presc && <div className="log-presc">{presc}{c.presc?.cue ? ` · ${c.presc.cue}` : ""}</div>}
+      {(presc || c.presc?.cue) && (
+        <div className="log-presc">
+          {presc && <span className="log-presc-spec">{presc}</span>}
+          {/* Cue on its own line: the spec is what he reads mid-set, the cue is prose. */}
+          {c.presc?.cue && <span className="log-presc-cue">{c.presc.cue}</span>}
+        </div>
+      )}
 
       {!c.skipped && (
         <>

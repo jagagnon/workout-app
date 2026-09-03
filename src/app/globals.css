@@ -807,7 +807,11 @@ a { color: inherit; text-decoration: none; }
   color: var(--text-faint);
   padding: 8px 0 2px;
   letter-spacing: 0.03em;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
+.log-presc-spec { color: var(--text-dim); }
 
 .log-fields { display: flex; gap: 8px; align-items: flex-end; flex-wrap: wrap; padding-top: 10px; }
 .log-field { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 78px; }
