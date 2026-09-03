@@ -1,6 +1,5 @@
 "use client";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { autoregulate } from "../../lib/autoregulate";
 import { formatLoad } from "../../lib/load";
 import { Sparkline } from "../components/Sparkline";
 import type { HistoryPoint } from "../../lib/progress";
@@ -202,20 +201,6 @@ export function LogForm({ date, plan, items, registry, history }: {
     } catch { /* history is a nicety; never block logging on it */ }
   }, [hist, patch, registry]);
 
-  function suggestionFor(c: Card): string | null {
-    // RPE flips the call (top of range at 7 progresses, at 8 holds), so showing
-    // one before it is entered states a verdict the missing input could reverse.
-    if (c.skipped || c.reps === "" || rpe === "") return null;
-    return autoregulate({
-      reps_prescribed: c.presc?.reps ?? null,
-      reps_done: Number(c.reps),
-      rpe: rpe === "" ? null : Number(rpe),
-      load_type: c.load_type,
-      load_value: signedLoad(c),
-      niggle: /niggle|tweak|pain|sore|twinge/i.test(feel),
-    }).note;
-  }
-
   async function submit() {
     setBusy(true);
     setError(null);
@@ -236,9 +221,7 @@ export function LogForm({ date, plan, items, registry, history }: {
           per_side: c.per_side,
           sets: c.sets === "" ? null : Number(c.sets),
           skipped: c.skipped,
-          // The autoregulation call the generator reads back via get_recent_sessions.
-          // A note he typed wins over the suggestion.
-          notes: c.note.trim() || suggestionFor(c) || undefined,
+          notes: c.note.trim() || undefined,
         })),
     };
     try {
@@ -306,7 +289,6 @@ export function LogForm({ date, plan, items, registry, history }: {
               card={c}
               byFamily={byFamily}
               points={hist[c.exercise] ?? []}
-              suggestion={suggestionFor(c)}
               result={results?.find((r) => r.input.exercise === c.exercise)}
               onPatch={(p) => patch(c.key, p)}
               onSwap={(name) => swapExercise(c.key, name)}
@@ -422,11 +404,10 @@ function Segmented({ value, options, onChange }: {
   );
 }
 
-function LogCard({ card: c, byFamily, points, suggestion, result, onPatch, onSwap, onRemove }: {
+function LogCard({ card: c, byFamily, points, result, onPatch, onSwap, onRemove }: {
   card: Card;
   byFamily: Array<[string, RegistryRow[]]>;
   points: HistoryPoint[];
-  suggestion: string | null;
   result?: EntryResult;
   onPatch: (p: Partial<Card>) => void;
   onSwap: (name: string) => void;
@@ -504,13 +485,9 @@ function LogCard({ card: c, byFamily, points, suggestion, result, onPatch, onSwa
             </button>
           </div>
 
-          {suggestion
-            ? <div className="log-sugg">{suggestion}</div>
-            : !c.skipped && c.reps !== "" && <div className="log-sugg pending">add session RPE for a progression call</div>}
-
           {showNote || c.note ? (
             <input
-              className="log-note" value={c.note} placeholder={suggestion ?? "note"}
+              className="log-note" value={c.note} placeholder="note"
               onChange={(e) => onPatch({ note: e.target.value })}
             />
           ) : (

@@ -10,9 +10,12 @@ description: >
 
 > **The app is the primary logging surface.** Julien logs on his phone at
 > `{WORKOUT_API_URL}/log`, which renders the prescribed session as a pre-filled
-> form and writes actuals *and* the per-lift autoregulation note itself. This
-> skill is the **fallback** — for a chat dump after the fact, a correction, or a
-> session logged away from the phone.
+> form and writes the actuals. This skill is the **fallback** — for a chat dump
+> after the fact, a correction, or a session logged away from the phone.
+>
+> `entry.notes` is for Julien's own observations, not a progression call: the
+> generator makes that call when it writes the next session, off the prescription
+> and the actuals.
 
 ## Endpoint
 - Base URL: read `WORKOUT_API_URL` (e.g. `https://<deploy>`); token: `WORKOUT_API_TOKEN`.
