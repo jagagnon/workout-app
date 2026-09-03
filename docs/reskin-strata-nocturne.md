@@ -28,6 +28,62 @@ CSS and should not need any.
 
 ---
 
+## Mobile is the primary target, not a final check
+
+This app is used **one-handed, mid-set, on a phone, in a gym**. `/log` especially: it is
+open between working sets while Julien is holding a bell. A layout that only resolves on a
+laptop is a failed job, however good the desktop looks.
+
+The current CSS has **one media query in 997 lines** (`@media (max-width: 680px)` at line
+314, which collapses `.grid` to a single column). Everything else survives on fluid luck
+inside a 900px column. **Phase 2 removes that column** in favour of full-bleed bands, and
+Phase 1 swaps in a display face 30-40% wider. Both changes land hardest on small screens,
+so mobile is verified at the end of *every* phase, not once at the end.
+
+### How to look at it
+
+A launch config already exists. Start the dev server and drive it:
+
+```
+preview_start  name: "workout-app"
+resize_window  preset: "mobile"      # 375x812
+resize_window  width: 360, height: 740
+resize_window  preset: "desktop"     # reset when done
+```
+
+Screenshots from a hidden browser pane can come back blank or stale. If a screenshot looks
+empty, do not conclude the page is broken — confirm with `read_page`, or check geometry
+directly before believing it:
+
+```js
+document.documentElement.scrollWidth <= window.innerWidth   // must be true: no h-scroll
+```
+
+### The four gates, checked at every phase
+
+Run at **360x740** (small Android, the tightest realistic case) and **390x844** (iPhone
+14/15). Both must pass:
+
+1. **No horizontal scroll.** `document.documentElement.scrollWidth <= window.innerWidth`.
+   This is the one that silently breaks; check it, don't eyeball it.
+2. **No text below 12px** on anything read mid-set — set values, loads, rep counts. Labels
+   and axis ticks may go to 10px.
+3. **Tap targets >= 44x44px** for anything pressed during a session: the skip button, the
+   total/each-side toggle, load and rep inputs, the save control.
+4. **No hover-only affordances.** There is no hover on a phone. `.pr-row:hover` and
+   `.pr-name:hover` are decorative and fine; anything that *reveals information or an
+   action* on hover must also be visible or reachable by tap.
+
+### Viewport meta
+
+Next injects a default `width=device-width, initial-scale=1` and `src/app/layout.tsx` does
+not override it. **Verify this is still true in this Next version** before assuming it —
+check `node_modules/next/dist/docs/` per `AGENTS.md`. If the rendered `<head>` has no
+viewport tag, export a `viewport` object from `layout.tsx`. Everything else in this
+document is worthless if the page renders at 980px CSS pixels and scales down.
+
+---
+
 ## Phase 1 — Tokens and type
 
 One block plus seven hardcoded escapees. After this the whole app is indigo but still
@@ -118,7 +174,20 @@ Add `text-wrap: balance` to headings. In the reference build the h1 is
 `clamp(42px, 7.4vw, 84px)` with `line-height: .98` and `letter-spacing: -.022em` — use that
 as the starting point for `.wordmark`.
 
-**Done when:** app builds, gate passes, no orange anywhere, no headline wraps mid-word.
+**The topbar is the highest-risk regression in this whole job.** `.topbar` (line 98) is
+`display: flex; justify-content: space-between` with **no `flex-wrap`**, holding the
+wordmark and the days-to-goal countdown side by side. `.wordmark` is
+`clamp(32px, 7.4vw, 56px)` — sized for Anton, which is ultra-condensed. In Fraunces the
+same clamp is ~35% wider and the row cannot wrap, so at 390px the countdown gets crushed or
+the row overflows the viewport.
+
+Fix it in this phase, not later: add `flex-wrap: wrap` to `.topbar`, and drop the
+`.wordmark` clamp minimum (try `clamp(26px, 6.4vw, 52px)`). Verify at 360px that the
+wordmark and the countdown either sit on one line comfortably or stack cleanly — never
+overlap, never clip.
+
+**Done when:** app builds, gate passes, no orange anywhere, no headline wraps mid-word,
+and the four mobile gates pass at 360px and 390px on `/`.
 
 ---
 
@@ -178,6 +247,20 @@ container sets horizontal padding via a `padding` shorthand and a section class 
 viewport edge. **Use `padding-top` / `padding-bottom` longhands on any class that shares an
 element with the width container.**
 
+### 2e. Full-bleed plates on a phone
+
+Full-bleed is the one structural change that can *improve* mobile — edge-to-edge plates use
+the whole screen instead of wasting 22px of gutter each side. Make sure it actually does:
+
+- The plate itself goes edge to edge; its **inner container keeps its horizontal padding**
+  so text never touches the bezel. At 360px use no less than 16px inner padding.
+- Check the `.grid` breakpoint at line 314 still makes sense. With plates rather than
+  cards, two-up at 680px+ may want to become full-width sooner — if a two-column row of
+  plates looks cramped at 700px, raise the breakpoint.
+- `overflow-x: hidden` on `body` (line 46) currently **hides** horizontal overflow rather
+  than preventing it. Do not treat it as proof there is none — check `scrollWidth`
+  directly, or a real overflow will be invisible until it clips content.
+
 ### 2f. The hero hairline
 
 `.hero::after` (line 239) is a horizontal accent gradient across the hero's top edge. Keep
@@ -185,7 +268,7 @@ it — it now reads as the light source above the stack. It picks up `--accent` 
 automatically; no edit needed. Confirm it still looks intentional against the lip.
 
 **Done when:** gate passes; `/` renders as stacked plates with no rounded corners, no drop
-shadows, no corner ticks; nothing scrolls horizontally at 390px.
+shadows, no corner ticks; the four mobile gates pass at 360px and 390px.
 
 ---
 
@@ -221,7 +304,11 @@ grep -rn '#[0-9a-fA-F]\{3,6\}' src/app/components/
 ```
 
 **Done when:** gate passes, `/` and `/exercise/[id]` charts render in periwinkle with a
-coral bodyweight reference line.
+coral bodyweight reference line, and the four mobile gates pass.
+
+Charts are a common source of horizontal overflow: Recharts `ResponsiveContainer` sizes to
+its parent, so a parent with fixed padding plus a min-width child can push past the
+viewport. Check `scrollWidth` on both routes at 360px specifically.
 
 ---
 
@@ -233,7 +320,11 @@ finding what did not.
 Walk each route and fix what looks wrong. In this order:
 
 1. `/prs` — `src/app/prs/page.tsx` (23 lines) + `.pr-*` and dumbbell-chart CSS
-   (globals.css 318–369, 566–676). Thin, mostly inherits.
+   (globals.css 318–369, 566–676). Thin, mostly inherits. **Mobile trap:** `.pr-name`
+   (line 621) is `width: 150px; flex-shrink: 0` — a hard column. At 360px that leaves
+   ~150px for load and reps, and Space Mono is wider than JetBrains Mono at the same size.
+   Change to `flex: 1 1 auto; min-width: 0` with the numeric columns fixed instead, or
+   reduce to `width: 40%`.
 2. `/sessions` — `src/app/sessions/page.tsx` (64 lines) + CSS 370–449 and the calendar
    450–526. Check the `.tag.u` / `.tag.l` region pills read as periwinkle/coral, matching
    the reference build's upper/lower semantics.
@@ -243,12 +334,24 @@ Walk each route and fix what looks wrong. In this order:
    mid-workout between working sets — it is the only place a styling regression actually
    costs something. Do it with the test suite already green on everything else.
 
+   **`/log` gets the strictest mobile pass of any route.** It is operated one-handed while
+   holding a weight. Specifically:
+   - `.log-field` (line 817) is `flex: 1; min-width: 78px`. Several fields in a row at
+     360px will overflow. Verify the set row wraps or shrinks rather than pushing wide.
+   - The load/rep inputs, the skip button and the `total` / `each side` toggle must all
+     clear 44x44px. The toggle in particular is currently sized like a text label.
+   - `.log-overlay .card` (line 962) is `max-width: 320px` — confirm it still centres and
+     does not touch the bezel at 360px.
+   - Numbers entered mid-set must not drop below 14px. This is the one screen where
+     legibility beats density.
+
 In the logger CSS, the radius values at lines 762–988 are all `10px`/`12px` pills. Square
 them to `2px` for consistency with the plates, **except** `.cal-dot` (line 501) and the two
 `border-radius: 50%` circles at 633/655, which are meant to be round.
 
-**Done when:** gate passes; all four routes walked at 390px and 1280px; no orange, no
-rounded plates, no horizontal scroll.
+**Done when:** gate passes; all four routes walked at **360px, 390px, 768px and 1280px**;
+no orange, no rounded plates, no horizontal scroll at any width; all four mobile gates pass
+on every route.
 
 ---
 
@@ -260,7 +363,16 @@ npm test
 grep -rn '255, *90, *31\|#ff5a1f\|#6fd0e6\|Anton\|Archivo\|JetBrains' src/
 ```
 
-The last grep should return nothing. Then confirm the Vercel deploy reached READY.
+The last grep should return nothing.
+
+Then walk all four routes at **360x740** and **390x844** one final time, confirming on each:
+
+```js
+document.documentElement.scrollWidth <= window.innerWidth
+```
+
+Reset the viewport (`resize_window preset: "desktop"`) when finished. Then confirm the
+Vercel deploy reached READY.
 
 ## Known traps, collected
 
@@ -272,3 +384,11 @@ The last grep should return nothing. Then confirm the Vercel deploy reached READ
 6. `padding` shorthand on a shared element wipes the width container's horizontal padding
    (Phase 2d).
 7. Recharts gradient `stopColor` and `LabelList fill` may not accept `var()` (Phase 3).
+8. `.topbar` has no `flex-wrap` and `.wordmark`'s clamp was sized for a condensed face —
+   the countdown overflows on a phone after the font swap (Phase 1d).
+9. `overflow-x: hidden` on `body` hides overflow instead of preventing it. Never treat the
+   absence of a visible scrollbar as proof; check `scrollWidth` (Phase 2e).
+10. `.pr-name` has a hard `width: 150px` and `.log-field` a `min-width: 78px` — both are
+    fixed pixels in flex rows and both bite at 360px (Phase 4).
+11. Browser-pane screenshots can return blank or stale frames. Verify geometry in JS before
+    concluding a page is broken.
