@@ -494,15 +494,22 @@ function LogCard({ card: c, byFamily, points, result, onPatch, onSwap, onRemove 
               // it external — same button, no need to rewrite what it asked for.
               onChange={(v) => onPatch({
                 load_type: v === "added" && c.load_type === "external" ? "external" : (v as LoadType),
+                // per_side qualifies a number that no longer exists once the lift is
+                // bodyweight, and a stale true is invisible here but wrong in the data.
+                ...(v === "bodyweight" ? { per_side: false } : {}),
               })}
             />
-            <button
-              type="button"
-              className={`log-skip log-side${c.per_side ? " on" : ""}`}
-              onClick={() => onPatch({ per_side: !c.per_side })}
-            >
-              /side
-            </button>
+            {/* Only meaningful next to a weight, and labelled with what it asserts:
+                "/side" reads as decoration, "each side" forces the 16-vs-32 decision. */}
+            {c.load_type !== "bodyweight" && (
+              <button
+                type="button"
+                className={`log-skip log-side${c.per_side ? " on" : ""}`}
+                onClick={() => onPatch({ per_side: !c.per_side })}
+              >
+                {c.per_side ? "each side" : "total"}
+              </button>
+            )}
           </div>
 
           {showNote || c.note ? (
