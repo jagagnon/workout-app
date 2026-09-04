@@ -52,6 +52,10 @@ description: >
 5. **Close with the dashboard link** — `{WORKOUT_API_URL}` — so he can see the PR board and ladder reflect what was just logged.
 
 ## Reviewing progress
+**Every read below needs `Authorization: Bearer {WORKOUT_API_TOKEN}`, same as the
+writes.** These used to be open; they are not any more, and an unauthenticated
+call now returns 401 rather than data.
+
 - Trend for a lift: `GET /api/progress?exercise=<canonical>`.
 - Muscle-up ladder: `GET /api/progress?ladder=1`.
 - Stalled lifts: `GET /api/progress?stalled=1`.

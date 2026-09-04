@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
 import { exerciseProgression, muscleUpLadder, stalledLifts } from "../../../lib/progress";
+import { checkBearerOrSession } from "../../../lib/auth";
 
 export async function GET(req: Request) {
+  if (!checkBearerOrSession(req)) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   const url = new URL(req.url);
   const exercise = url.searchParams.get("exercise");
   if (exercise) return NextResponse.json(await exerciseProgression(exercise));

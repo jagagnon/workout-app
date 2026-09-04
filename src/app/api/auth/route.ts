@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import {
-  AUTH_LIMITS, clientIp, passcodeMatches, recentFailures, recordAttempt, sessionCookie, sessionToken,
+  AUTH_LIMITS, clientIp, passcodeMatches, sessionCookie, sessionToken,
 } from "../../../lib/auth";
+import { recentFailures, recordAttempt } from "../../../lib/auth-attempts";
 
 export async function POST(req: Request) {
   const passcode = process.env.APP_PASSCODE;

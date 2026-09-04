@@ -1,5 +1,4 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
-import { sql } from "../db/client";
 
 const COOKIE_NAME = "wa_session";
 const WINDOW_MIN = 15;
@@ -58,19 +57,6 @@ export function checkBearerOrSession(req: Request): boolean {
 export function clientIp(req: Request): string {
   const fwd = req.headers.get("x-forwarded-for") ?? "";
   return fwd.split(",")[0].trim() || "unknown";
-}
-
-export async function recentFailures(ip: string): Promise<number> {
-  const [row] = await sql`
-    select count(*)::int as n from auth_attempt
-    where ip = ${ip} and ok = false
-      and created_at > now() - ${`${WINDOW_MIN} minutes`}::interval
-  `;
-  return Number(row.n);
-}
-
-export async function recordAttempt(ip: string, ok: boolean): Promise<void> {
-  await sql`insert into auth_attempt (ip, ok) values (${ip}, ${ok})`;
 }
 
 export function sessionCookie(token: string): string {

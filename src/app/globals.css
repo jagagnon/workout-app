@@ -1065,3 +1065,28 @@ a { color: inherit; text-decoration: none; }
 .log-page > .card { padding-left: 18px; padding-right: 18px; }
 /* .topbar brings its own gutter — don't inset it twice. */
 .log-page > .topbar { padding-left: 0; padding-right: 0; }
+
+/* ---- login ---- */
+.login-page { padding-left: 20px; padding-right: 20px; }
+.login-page > .topbar { padding-left: 0; padding-right: 0; }
+.login-form { display: flex; flex-direction: column; gap: 14px; max-width: 320px; }
+.login-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+.login-input {
+  min-height: 52px;
+  background: var(--bg);
+  border: 1px solid var(--line-bright);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 18px;
+  letter-spacing: 0.3em;
+  padding: 0 14px;
+}
+.login-input:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
+.login-error { font-family: var(--font-mono); font-size: 11px; color: var(--accent-hi); }
