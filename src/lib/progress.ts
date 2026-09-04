@@ -245,7 +245,8 @@ export async function recentSessions(limit = 20) {
 export async function roadmapAchieved() {
   const rows = (await sql`
     with logged as (
-      select x.canonical_name as name, e.load_type, e.load_value, e.metric_value, s.date
+      select x.canonical_name as name, e.load_type, e.load_value,
+             e.metric_type, e.metric_value, e.sets, s.date
       from entry e
       join exercise x on x.id = e.exercise_id
       join session s on s.id = e.session_id
@@ -255,9 +256,12 @@ export async function roadmapAchieved() {
       where name = 'Muscle-up' and load_type = 'assisted' and load_value is not null
       order by load_value desc, date desc limit 1)
     union all
-    (select 'negatives', metric_value, date from logged
-      where name = 'Muscle-up negative'
-      order by metric_value desc, date desc limit 1)
+    -- The count of negatives, not their duration: the sets column carries the
+    -- 5 singles, metric_value carries the 8s hold. Rows with no set count are
+    -- no evidence of a count and are skipped, not assumed to be a single.
+    (select 'negatives', sets, date from logged
+      where name = 'Muscle-up negative' and sets is not null
+      order by sets desc, date desc limit 1)
     union all
     -- Rep-qualified: the roadmap asks for +12-13kg *at 3-5 reps*, so a heavy
     -- single would not satisfy it and must not be read as if it did.
@@ -267,7 +271,7 @@ export async function roadmapAchieved() {
       order by load_value desc, date desc limit 1)
     union all
     (select 'ringdip', metric_value, date from logged
-      where name = 'Ring dip'
+      where name = 'Ring dip' and metric_type = 'reps'
       order by metric_value desc, date desc limit 1)
   `) as unknown as Array<{ key: MetricKey; value: string; date: string }>;
 

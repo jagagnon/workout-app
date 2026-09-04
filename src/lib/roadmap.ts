@@ -15,7 +15,10 @@ export interface RoadmapMetric {
   /** Canonical exercise name this metric is read from. */
   exercise: string;
   /** Which number on the entry carries the metric. */
-  read: "assist" | "added" | "reps";
+  read: "assist" | "added" | "reps" | "sets";
+  /** Required metric_type for a "reps" read. A duration must never satisfy a
+      count gate: 8 seconds of hold once read as 8 clean negatives. */
+  metricType?: "reps" | "seconds";
   unit: string;
   /** Only sets in this rep window count — "+12-13 kg x 3-5" is a rep-qualified load. */
   reps?: [number, number];
@@ -35,10 +38,14 @@ export const METRICS: RoadmapMetric[] = [
     format: (v) => (v === 0 ? "none" : `${v}kg`),
   },
   {
+    // The roadmap gate is a COUNT of clean negatives. The exercise records
+    // seconds (the 5-8s control hold), so the count lives in `sets` — "5 singles
+    // @ 8s" is sets 5, metric 8s. Reading metric_value here compared a duration
+    // against a rep target and reported the gate met at 8s.
     key: "negatives",
     label: "Unassisted negatives",
     exercise: "Muscle-up negative",
-    read: "reps",
+    read: "sets",
     unit: "",
     format: (v) => `${v}`,
   },
@@ -56,6 +63,7 @@ export const METRICS: RoadmapMetric[] = [
     label: "Ring dip",
     exercise: "Ring dip",
     read: "reps",
+    metricType: "reps",
     unit: "",
     format: (v) => `${v}`,
   },

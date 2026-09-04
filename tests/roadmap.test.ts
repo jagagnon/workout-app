@@ -72,3 +72,11 @@ test("roadmapStatus covers every metric in order", () => {
   const rows = roadmapStatus(achieved, "2026-09-04");
   assert.deepEqual(rows.map((r) => r.metric.key), METRICS.map((m) => m.key));
 });
+
+test("a hold duration can never satisfy a count gate", () => {
+  // The negatives metric reads `sets` (the count of singles), not metric_value
+  // (the 5-8s control hold). Reading the duration reported 8s as 8 clean reps.
+  assert.equal(negatives.read, "sets");
+  const ringdip2 = METRICS.find((m) => m.key === "ringdip")!;
+  assert.equal(ringdip2.metricType, "reps");
+});
