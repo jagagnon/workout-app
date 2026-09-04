@@ -14,7 +14,7 @@ export default async function SessionsPage() {
   const sess = sessions as Array<{
     id: number; date: unknown; region: string | null; type: string | null;
     rpe: number | null; feel: string | null; mu_note: string | null;
-    entries: Array<{ exercise: string; metric: number; load_type: string; load_value: number | null; unit: string; skipped: boolean }>;
+    entries: Array<{ exercise: string; metric: number; load_type: string; load_value: number | null; unit: string; sets: number | null; skipped: boolean }>;
   }>;
 
   return (
@@ -45,9 +45,15 @@ export default async function SessionsPage() {
                     <div className="entry-line" key={i}>
                       <span className="ex">{e.exercise}</span>
                       <span className="res">
+                        {/* 3x6 and 5x6 are different sessions, so the set count leads
+                            when it was recorded. Older entries have none — those still
+                            read as the bare best set rather than inventing a "1x". */}
                         {e.skipped
                           ? <span className="skipped-mark">skipped</span>
-                          : <>{e.metric} @ {formatLoad(e.load_type as LoadType, e.load_value, e.unit)}</>}
+                          : <>
+                              {e.sets != null && <span className="sets">{e.sets}&times;</span>}
+                              {e.metric} @ {formatLoad(e.load_type as LoadType, e.load_value, e.unit)}
+                            </>}
                       </span>
                     </div>
                   ))}

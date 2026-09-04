@@ -142,6 +142,9 @@ export function LogForm({ date, plan, items, registry, history }: {
   const [muNote, setMuNote] = useState("");
   const [hist, setHist] = useState(history);
   const [results, setResults] = useState<EntryResult[] | null>(null);
+  // Set once every entry is written. The form is torn down at that point so a
+  // second tap can't re-submit a session that is already in the database.
+  const [logged, setLogged] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [needsPasscode, setNeedsPasscode] = useState(false);
@@ -171,10 +174,13 @@ export function LogForm({ date, plan, items, registry, history }: {
 
   useEffect(() => {
     if (!restored.current) return;
+    // Clearing the form after a successful log would otherwise persist an empty
+    // draft, and a reload would come back blank instead of re-rendering the plan.
+    if (logged) return;
     try {
       localStorage.setItem(draftKey, JSON.stringify({ cards, type, rpe, feel, muNote }));
     } catch { /* private mode / quota — not worth failing over */ }
-  }, [draftKey, cards, type, rpe, feel, muNote]);
+  }, [draftKey, cards, type, rpe, feel, muNote, logged]);
 
   const byFamily = useMemo(() => {
     const groups = new Map<string, RegistryRow[]>();
@@ -238,8 +244,13 @@ export function LogForm({ date, plan, items, registry, history }: {
       if (!res.ok) { setError((await res.json())?.error ?? `failed (${res.status})`); setBusy(false); return; }
       const json = await res.json();
       setResults(json.results as EntryResult[]);
+      // Only a clean sweep clears the form; if anything needs confirmation the
+      // cards have to stay put so it can be fixed and re-sent.
       if (json.results.every((r: EntryResult) => r.written)) {
         try { localStorage.removeItem(draftKey); } catch { /* nothing to clear */ }
+        setLogged(true);
+        setCards([]);
+        setRpe(""); setFeel(""); setMuNote("");
       }
     } catch {
       setError("network error — nothing was written");
@@ -284,7 +295,7 @@ export function LogForm({ date, plan, items, registry, history }: {
         </section>
       )}
 
-      {blocks.map((b, bi) => (
+      {!logged && blocks.map((b, bi) => (
         <section key={`${b.block ?? "x"}-${bi}`}>
           {b.block && <div className="log-block-title">Block {b.block}</div>}
           {b.cards.map((c) => (
@@ -302,13 +313,15 @@ export function LogForm({ date, plan, items, registry, history }: {
         </section>
       ))}
 
-      <button
-        type="button"
-        className="log-add"
-        onClick={() => setCards((cs) => [...cs, blankCard(registry[0]?.canonical_name ?? "", registry[0])])}
-      >
-        ＋ add exercise
-      </button>
+      {!logged && (
+        <button
+          type="button"
+          className="log-add"
+          onClick={() => setCards((cs) => [...cs, blankCard(registry[0]?.canonical_name ?? "", registry[0])])}
+        >
+          ＋ add exercise
+        </button>
+      )}
 
       {results && (
         <section className="card rise log-results">
@@ -319,9 +332,16 @@ export function LogForm({ date, plan, items, registry, history }: {
               {r.is_pr && <span className="log-pr">⬆ PR</span>}
             </div>
           ))}
+          {logged && (
+            <div className="log-done">
+              <span>Saved. The form is cleared so this session can&rsquo;t be logged twice.</span>
+              <a className="log-done-link" href="/">Dashboard &rarr;</a>
+            </div>
+          )}
         </section>
       )}
 
+      {!logged && (
       <div className="log-footer">
         {showSession && (
           <>
@@ -368,6 +388,7 @@ export function LogForm({ date, plan, items, registry, history }: {
           {busy ? "Logging…" : "Log session"}
         </button>
       </div>
+      )}
 
       {needsPasscode && (
         <div className="log-overlay">
