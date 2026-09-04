@@ -1112,3 +1112,67 @@ a { color: inherit; text-decoration: none; }
 }
 .log-done-link { color: var(--accent); text-decoration: none; white-space: nowrap; }
 .log-done-link:hover { color: var(--accent-hi); }
+
+/* ---- roadmap gates ---- */
+.gate-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
+  color: var(--text-faint);
+  margin-bottom: 4px;
+}
+.gate-verdict { color: var(--good); }
+.gate-verdict.off { color: var(--accent-hi); }
+.gates { display: flex; flex-direction: column; }
+/* Four columns on a wide plate; the pips keep their own column so every row's
+   progress lines up and the run of filled ones can be read down the stack. */
+.gate {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--line);
+}
+.gate:last-child { border-bottom: none; }
+.gate-name { font-size: 13px; color: var(--text); }
+.gate-now, .gate-goal {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+}
+.gate-goal { justify-content: flex-end; text-align: right; }
+.gate-now .on { color: var(--text); }
+.gate-now .off, .gate-goal .off { color: var(--accent-hi); }
+.gate-goal .on { color: var(--good); }
+.gate-when, .gate-none { font-size: 10px; color: var(--text-faint); }
+.gate-gap { color: var(--accent); }
+.gate-pips { display: flex; gap: 5px; }
+.pip {
+  width: 22px;
+  height: 5px;
+  background: var(--surface-2);
+  border-top: 1px solid var(--line);
+}
+.pip.hit { background: var(--accent); border-top-color: var(--accent-hi); }
+/* An ungated checkpoint is neither a win nor a miss — show it as absent. */
+.pip.ungated { background: transparent; border-top-color: var(--line-bright); }
+.pip.now { box-shadow: 0 0 0 1px var(--text-dim); }
+
+@media (max-width: 620px) {
+  /* The name owns the first line; value, pips and target share the second, so
+     nothing truncates and the row still reads as one metric. */
+  .gate { grid-template-columns: 1fr auto; gap: 6px 10px; }
+  .gate-name { grid-column: 1 / -1; }
+  .gate-pips { grid-column: 1 / -1; order: 3; }
+  .gate-goal { order: 2; }
+  .pip { width: 100%; min-width: 22px; flex: 1; }
+}

@@ -1,8 +1,9 @@
 import Link from "next/link";
-import { muscleUpContext, muscleUpLadder, prBoard, recentCalendar } from "../lib/progress";
+import { muscleUpContext, muscleUpLadder, prBoard, recentCalendar, roadmapAchieved } from "../lib/progress";
 import { LadderChart } from "./components/LadderChart";
 import { PrBoard } from "./components/PrBoard";
 import { WorkoutCalendar } from "./components/WorkoutCalendar";
+import { RoadmapGates } from "./components/RoadmapGates";
 import { fmtDay } from "../lib/date-format";
 
 export const dynamic = "force-dynamic";
@@ -13,9 +14,10 @@ const PROGRAM_START = new Date("2026-06-01T00:00:00Z");
 const fmtDate = (d: unknown) => fmtDay(d as string);
 
 export default async function Home() {
-  const [ladderRaw, prs, calendarRows, muCtx] = await Promise.all([
-    muscleUpLadder(), prBoard(), recentCalendar(), muscleUpContext(),
+  const [ladderRaw, prs, calendarRows, muCtx, achieved] = await Promise.all([
+    muscleUpLadder(), prBoard(), recentCalendar(), muscleUpContext(), roadmapAchieved(),
   ]);
+  const today = new Date().toISOString().slice(0, 10);
 
   const ladder = (ladderRaw as Array<{ date: unknown; load_value: number | null; metric_value: number }>)
     .filter((r) => r.load_value != null)
@@ -84,6 +86,14 @@ export default async function Home() {
               <div><span className="meta-k">as of</span>{fmtDate(muCtx.last_date)}{staleNote}</div>
             </div>
           )}
+        </section>
+
+        <section className="card span2 rise" style={{ animationDelay: "175ms" }}>
+          <div className="card-title-row">
+            <div className="card-title">Roadmap Gates</div>
+            <span className="cal-hint">to {GOAL.toISOString().slice(0, 7)}</span>
+          </div>
+          <RoadmapGates achieved={achieved} today={today} />
         </section>
 
         <section className="card rise" style={{ animationDelay: "210ms" }}>

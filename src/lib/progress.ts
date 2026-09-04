@@ -1,3 +1,4 @@
+import type { Achieved, MetricKey } from "./roadmap";
 import { sql } from "../db/client";
 
 export async function exerciseProgression(canonicalName: string) {
@@ -236,4 +237,43 @@ export async function recentSessions(limit = 20) {
     order by s.date desc
     limit ${limit}
   `) as unknown as Array<Record<string, unknown>>;
+}
+
+// Best ever per roadmap metric, with the date it was set. All-time by design:
+// a cleared gate stays cleared (see src/lib/roadmap.ts). Each branch takes the
+// single best row rather than a bare max() so the date travels with the value.
+export async function roadmapAchieved() {
+  const rows = (await sql`
+    with logged as (
+      select x.canonical_name as name, e.load_type, e.load_value, e.metric_value, s.date
+      from entry e
+      join exercise x on x.id = e.exercise_id
+      join session s on s.id = e.session_id
+      where e.skipped = false
+    )
+    (select 'band' as key, load_value as value, date from logged
+      where name = 'Muscle-up' and load_type = 'assisted' and load_value is not null
+      order by load_value desc, date desc limit 1)
+    union all
+    (select 'negatives', metric_value, date from logged
+      where name = 'Muscle-up negative'
+      order by metric_value desc, date desc limit 1)
+    union all
+    -- Rep-qualified: the roadmap asks for +12-13kg *at 3-5 reps*, so a heavy
+    -- single would not satisfy it and must not be read as if it did.
+    (select 'pullup', load_value, date from logged
+      where name = 'Pull-ups' and load_type in ('added','external')
+        and load_value is not null and metric_value between 3 and 5
+      order by load_value desc, date desc limit 1)
+    union all
+    (select 'ringdip', metric_value, date from logged
+      where name = 'Ring dip'
+      order by metric_value desc, date desc limit 1)
+  `) as unknown as Array<{ key: MetricKey; value: string; date: string }>;
+
+  const out: Achieved = { band: null, negatives: null, pullup: null, ringdip: null };
+  for (const r of rows) {
+    out[r.key] = { value: Number(r.value), date: String(r.date) };
+  }
+  return out;
 }
