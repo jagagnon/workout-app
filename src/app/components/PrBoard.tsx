@@ -9,7 +9,7 @@ export function PrBoard({ rows }: { rows: Record<string, unknown>[] }) {
           <th>Exercise</th>
           <th>Added</th>
           <th>Assist</th>
-          <th>Best</th>
+          <th>Best set</th>
         </tr>
       </thead>
       <tbody>
@@ -24,7 +24,22 @@ export function PrBoard({ rows }: { rows: Record<string, unknown>[] }) {
             <td className={r.min_assist_load == null ? "dash" : "assist"}>
               {r.min_assist_load == null ? "—" : `${Math.abs(Number(r.min_assist_load))}`}
             </td>
-            <td>{r.max_metric == null ? "—" : Number(r.max_metric)}</td>
+            {/* One real set, not a lifetime high-water mark: the reps and the load
+                they were done at travel together, so the row can't imply a set
+                that never happened. */}
+            <td>
+              {r.best_metric == null ? "—" : (
+                <>
+                  {Number(r.best_metric)}
+                  {r.best_load != null && (
+                    <span className="pr-at">
+                      {" @ "}
+                      {Number(r.best_load) > 0 ? "+" : ""}{Number(r.best_load)}
+                    </span>
+                  )}
+                </>
+              )}
+            </td>
           </tr>
         ))}
       </tbody>

@@ -43,14 +43,62 @@ export async function stalledLifts(n = 3) {
   `) as unknown as Array<{ canonical_name: string; recent_best: number; sessions: number }>;
 }
 
+const BEST_SET_WINDOW_DAYS = 90;
+
 export async function prBoard(includeAll = false) {
   // Default: key lifts only (the visual board). includeAll drops the filter so the
   // generator can autoregulate off every tracked lift; un-logged ones come back null.
+  //
+  // The load columns stay all-time: they are PRs, and a PR does not expire.
+  // `best_metric` is a different thing and used to be computed the same way —
+  // max(metric_value) over every entry ever — which made it three unrelated
+  // maxima on one row. It reported 7 chin-ups beside +12.5kg when the 7 came
+  // from a +7.5kg session and a bodyweight one, and it sat on 4 muscle-ups from
+  // June while the assist fell 15kg, because more reps always wins and an
+  // unloaded set outranks a heavier one.
+  //
+  // It now names one set that actually happened: the most reps at the heaviest
+  // load carried in the last 90 days, with that load alongside so the pairing is
+  // visible rather than implied. An exercise not trained in the window has no
+  // current best and reports null — which is the honest answer, and safer for
+  // the generator than autoregulating off a number from April.
   return (await sql`
+    with recent as (
+      select e.exercise_id, e.metric_value, e.load_type, e.load_value
+      from entry e
+      join session s on s.id = e.session_id
+      where e.skipped = false
+        and s.date >= current_date - ${BEST_SET_WINDOW_DAYS}::int
+    ),
+    -- Heaviest load carried recently. Assistance is stored negative, so max()
+    -- is "least assisted" there and "heaviest" everywhere else. Null means the
+    -- exercise was only ever done unloaded in the window.
+    top_load as (
+      select exercise_id,
+             max(load_value) filter (
+               where load_type in ('added','external','assisted')
+             ) as load_value
+      from recent group by exercise_id
+    ),
+    best as (
+      select r.exercise_id,
+             max(r.metric_value) as best_metric,
+             t.load_value as best_load,
+             -- At one exact load_value the load_type is determined (-20 is
+             -- assisted, +12.5 is added); min() just picks it deterministically.
+             min(r.load_type) as best_load_type
+      from recent r
+      join top_load t on t.exercise_id = r.exercise_id
+      where (t.load_value is null and r.load_type = 'bodyweight')
+         or (t.load_value is not null and r.load_value = t.load_value)
+      group by r.exercise_id, t.load_value
+    )
     select e.id as exercise_id, e.canonical_name,
-           p.max_added_load, p.min_assist_load, p.max_metric
+           p.max_added_load, p.min_assist_load, p.max_metric,
+           b.best_metric, b.best_load, b.best_load_type
     from exercise e
     left join v_prs p on p.exercise_id = e.id
+    left join best b on b.exercise_id = e.id
     ${includeAll ? sql`` : sql`where e.is_key`}
     order by e.canonical_name
   `) as unknown as Array<Record<string, unknown>>;
