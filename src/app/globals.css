@@ -336,15 +336,21 @@ a { color: inherit; text-decoration: none; }
 }
 .pr th:first-child { text-align: left; }
 .pr td {
-  padding: 11px 0;
+  padding: 14px 0;
   border-bottom: 1px solid var(--line);
   text-align: right;
   color: var(--text);
   font-variant-numeric: tabular-nums;
 }
+/* The board lists five lifts, so the names get the display face — this is the
+   one place in the app where an exercise name is the headline rather than a
+   row label. /prs keeps 13px body type: eighty-two names at this size is a wall. */
 .pr td:first-child {
   text-align: left;
-  font-family: var(--font-body);
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: -0.005em;
   color: var(--text);
   padding-left: 10px;
   position: relative;
@@ -464,7 +470,15 @@ a { color: inherit; text-decoration: none; }
 .cal-card:hover .cal-hint { color: var(--accent); }
 .cal { display: flex; flex-direction: column; gap: 8px; }
 .cal-head, .cal-week { display: flex; align-items: center; gap: 10px; }
-.cal-dow, .cal-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; flex: 1; }
+/* Capped so the square cells stay cells: at the full plate width seven columns
+   of aspect-ratio 1 would be 145px tall apiece. */
+.cal-dow, .cal-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+  flex: 1;
+  max-width: 430px;
+}
 .cal-dow span {
   text-align: center;
   font-family: var(--font-mono);
@@ -482,28 +496,53 @@ a { color: inherit; text-decoration: none; }
   color: var(--text-faint);
   font-variant-numeric: tabular-nums;
 }
+/* Days are plates too: a square cell lit on its top edge like every other
+   surface in the app, filled solid on the days that were trained. Replaces the
+   dot-under-a-number, which read as a footnote rather than a record. */
 .cal-day {
   position: relative;
+  aspect-ratio: 1;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 5px;
-  padding: 7px 2px;
-  border-radius: var(--radius);
-  transition: background 0.15s ease;
-}
-.cal-day:hover { background: var(--surface-2); }
-.cal-daynum {
+  justify-content: center;
+  background: var(--bg);
+  border-top: 1px solid var(--line);
+  box-shadow: inset 0 1px 0 var(--lip);
   font-family: var(--font-mono);
   font-size: 11px;
-  color: var(--text-dim);
   font-variant-numeric: tabular-nums;
+  color: var(--text-faint);
+  transition: filter 0.15s ease;
 }
-.cal-day.future .cal-daynum { color: var(--text-faint); opacity: 0.5; }
-.cal-dots { display: flex; gap: 4px; height: 6px; }
-.cal-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-faint); }
-.cal-dot.u { background: var(--accent); box-shadow: 0 0 6px var(--accent-glow); }
-.cal-dot.l { background: var(--ref); box-shadow: 0 0 6px rgba(140, 155, 255, 0.45); }
+.cal-day:hover { filter: brightness(1.3); }
+.cal-day.u { background: var(--accent); border-top-color: var(--accent-hi); color: #1a0e07; }
+.cal-day.l { background: var(--ref-fill); border-top-color: var(--ref); color: var(--bg); }
+/* An upper and a lower on the same date: the plate splits rather than picking
+   a winner. `unique (date, region)` caps this at the two halves. */
+.cal-day.both {
+  background: linear-gradient(101deg, var(--accent) 0 50%, var(--ref-fill) 50% 100%);
+  border-top-color: var(--accent-hi);
+  color: var(--bg);
+}
+/* Trained, but the region was never recorded. */
+.cal-day.on { background: var(--surface-2); border-top-color: var(--line-bright); color: var(--text-dim); }
+/* Overrides the lip rather than joining it — a full ring reads as "you are here". */
+.cal-day.today { box-shadow: inset 0 0 0 2px var(--text); }
+.cal-day.future { opacity: 0.45; }
+
+/* On a phone the inline week tally squeezes the seven columns down to 30px
+   squares. Dropping it below the row hands the grid the full width and gets the
+   cells back to 42px, which is the smallest a dated plate still reads at. */
+@media (max-width: 560px) {
+  .cal-head-spacer { display: none; }
+  .cal-week { flex-wrap: wrap; }
+  .cal-count {
+    width: auto;
+    flex-basis: 100%;
+    text-align: left;
+    padding-top: 2px;
+  }
+}
 .cal-tip {
   position: absolute;
   bottom: calc(100% + 8px);

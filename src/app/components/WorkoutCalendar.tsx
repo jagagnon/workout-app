@@ -26,8 +26,25 @@ function isoDay(d: Date): string {
 
 const fmtTip = { format: (d: Date) => fmtDayWeekday(d) };
 
+// The cell is filled by what was trained, so the fill has to collapse a day's
+// sessions into one state. `unique (date, region)` means at most one upper and
+// one lower, which is why "both" is a single case and not a list.
+function dayClass(d: { sessions: Array<{ region: string | null }>; isFuture: boolean; isToday: boolean }): string {
+  const parts: string[] = [];
+  const upper = d.sessions.some((s) => s.region === "U");
+  const lower = d.sessions.some((s) => s.region === "L");
+  if (upper && lower) parts.push("both");
+  else if (upper) parts.push("u");
+  else if (lower) parts.push("l");
+  else if (d.sessions.length > 0) parts.push("on");
+  if (d.isFuture) parts.push("future");
+  if (d.isToday) parts.push("today");
+  return parts.length ? ` ${parts.join(" ")}` : "";
+}
+
 export function WorkoutCalendar({ rows }: { rows: CalendarRow[] }) {
   const today = utcDay(new Date());
+  const todayKey = isoDay(today);
   const firstMonday = addDays(mondayOf(today), -(WEEKS - 1) * 7);
 
   const byDay = new Map<string, Array<{ region: string | null; type: string | null; rpe: number | null }>>();
@@ -43,7 +60,7 @@ export function WorkoutCalendar({ rows }: { rows: CalendarRow[] }) {
     const days = Array.from({ length: 7 }, (_, d) => {
       const date = addDays(weekStart, d);
       const key = isoDay(date);
-      return { date, key, sessions: byDay.get(key) ?? [], isFuture: date > today };
+      return { date, key, sessions: byDay.get(key) ?? [], isFuture: date > today, isToday: key === todayKey };
     });
     const count = (region: "U" | "L") =>
       days.reduce((n, d) => n + d.sessions.filter((s) => s.region === region).length, 0);
@@ -62,13 +79,8 @@ export function WorkoutCalendar({ rows }: { rows: CalendarRow[] }) {
         <div className="cal-week" key={i}>
           <div className="cal-days">
             {wk.days.map((d) => (
-              <div className={`cal-day${d.isFuture ? " future" : ""}`} key={d.key}>
-                <span className="cal-daynum">{d.date.getUTCDate()}</span>
-                <span className="cal-dots">
-                  {d.sessions.map((s, j) => (
-                    <span key={j} className={`cal-dot${s.region === "U" ? " u" : s.region === "L" ? " l" : ""}`} />
-                  ))}
-                </span>
+              <div className={`cal-day${dayClass(d)}`} key={d.key}>
+                {d.date.getUTCDate()}
                 {d.sessions.length > 0 && (
                   <div className="cal-tip">
                     {d.sessions.map((s, j) => (
