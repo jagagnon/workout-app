@@ -46,8 +46,6 @@ const mcpHandler = createMcpHandler(
         region: z.enum(["U", "L"]).optional(),
         type: z.enum(["Strength", "Hypertrophy", "Volume"]).optional(),
         rpe: z.number().optional(),
-        feel: z.string().optional(),
-        mu_note: z.string().optional(),
         entries: z.array(entrySchema),
       },
       async (args) => {
@@ -160,7 +158,7 @@ const mcpHandler = createMcpHandler(
 
     server.tool(
       "get_recent_sessions",
-      "Get the last N actual sessions for a region (U or L), newest first — per-exercise results plus rpe, feel, and mu_note. Use to autoregulate: compare what was done vs prescribed, and read recent feel/MU notes.",
+      "Get the last N actual sessions for a region (U or L), newest first — per-exercise results, sets, skipped flags, rpe, and each exercise's own notes. Progression is read off the numbers: a lift at the top of its prescribed range goes up next time.",
       { region: z.enum(["U", "L"]), limit: z.number().optional() },
       async ({ region, limit }) => {
         const rows = await recentActuals(region, limit ?? 4);

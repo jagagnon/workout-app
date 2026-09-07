@@ -37,7 +37,12 @@ description: >
    - bodyweight / "BW" → `bodyweight`, load_value null.
    - **load unspecified + no loaded history for that lift → default `bodyweight` (load_value null); don't re-confirm.** Only ask about a missing load when the lift normally carries external weight (has loaded history, or is a known weighted movement — goblet / KB / landmine / dumbbell).
    - holds in seconds → metric_type `seconds`; carries in metres → `meters`.
-   - Also capture session-level **`rpe`** (1–10), **`feel`** (short "how it went / any niggles" note), and **`mu_note`** (answer to a muscle-up question — e.g. "could you get chest to bar?", "where did the rep break — pull or transition?"). **Prompt Julien for these** when logging — he'll forget otherwise. Include `rpe`, `feel`, `mu_note` (and `region`, `type` if known) in the POST body alongside `entries`.
+   - Also capture session-level **`rpe`** (1–10). Include `rpe` (and `region`, `type` if
+     known) in the POST body alongside `entries`.
+   - **There is no `feel` or `mu_note` any more.** An observation belongs on the exercise
+     it is about, in that entry's `notes` — including anything about the muscle-up, which
+     is read off the MU lift's own note. Both fields restated what the entry notes already
+     said; the API no longer accepts them.
 2. **Resolve novel lifts before sending.** While parsing, flag any exercise that looks genuinely new (not an obvious typo/variant of a known lift). Create it *first* — confirm with Julien, then `POST /api/exercise` — and only then assemble and send the `/api/log` call. Creating up front keeps logging to one clean call so a creation failure can't strand already-parsed set data. Step 4 stays as the fallback for anything that still comes back unmatched.
 3. POST to `{WORKOUT_API_URL}/api/log` with header `Authorization: Bearer {WORKOUT_API_TOKEN}`.
 4. Show Julien the returned per-exercise lines, PR flags, and any `needs_confirmation`
@@ -64,4 +69,4 @@ call now returns 401 rather than data.
 ## Rules
 - Summary-per-exercise only (best set + load). Do not invent per-set data.
 - Confirm with Julien before creating a new exercise via `/api/exercise` — never auto-create.
-- The RPE/feel/MU prompt + load-type semantics here are mirrored in the chat-mode `workout-generator` skill (LOG SESSION). Keep the two in sync if either changes.
+- The RPE prompt + load-type semantics here are mirrored in the chat-mode `workout-generator` skill (LOG SESSION). Keep the two in sync if either changes.

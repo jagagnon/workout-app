@@ -138,8 +138,6 @@ export function LogForm({ date, plan, items, registry, history }: {
   const [region, setRegion] = useState<"U" | "L">((plan?.region as "U" | "L") ?? "U");
   const [type, setType] = useState<string>(plan?.stimulus ?? "");
   const [rpe, setRpe] = useState("");
-  const [feel, setFeel] = useState("");
-  const [muNote, setMuNote] = useState("");
   const [hist, setHist] = useState(history);
   const [results, setResults] = useState<EntryResult[] | null>(null);
   // Set once every entry is written. The form is torn down at that point so a
@@ -167,8 +165,6 @@ export function LogForm({ date, plan, items, registry, history }: {
       if (d.cards?.length) setCards(d.cards);
       if (d.type) setType(d.type);
       if (d.rpe) setRpe(d.rpe);
-      if (d.feel) setFeel(d.feel);
-      if (d.muNote) setMuNote(d.muNote);
     } catch { /* a corrupt draft must never block logging */ }
   }, [draftKey]);
 
@@ -178,9 +174,9 @@ export function LogForm({ date, plan, items, registry, history }: {
     // draft, and a reload would come back blank instead of re-rendering the plan.
     if (logged) return;
     try {
-      localStorage.setItem(draftKey, JSON.stringify({ cards, type, rpe, feel, muNote }));
+      localStorage.setItem(draftKey, JSON.stringify({ cards, type, rpe }));
     } catch { /* private mode / quota — not worth failing over */ }
-  }, [draftKey, cards, type, rpe, feel, muNote, logged]);
+  }, [draftKey, cards, type, rpe, logged]);
 
   const byFamily = useMemo(() => {
     const groups = new Map<string, RegistryRow[]>();
@@ -219,8 +215,6 @@ export function LogForm({ date, plan, items, registry, history }: {
       date, region,
       type: type || undefined,
       rpe: rpe === "" ? undefined : Number(rpe),
-      feel: feel || undefined,
-      mu_note: muNote || undefined,
       entries: cards
         .filter((c) => c.exercise && (c.skipped || c.reps !== ""))
         .map((c) => ({
@@ -250,7 +244,7 @@ export function LogForm({ date, plan, items, registry, history }: {
         try { localStorage.removeItem(draftKey); } catch { /* nothing to clear */ }
         setLogged(true);
         setCards([]);
-        setRpe(""); setFeel(""); setMuNote("");
+        setRpe("");
       }
     } catch {
       setError("network error — nothing was written");
@@ -360,18 +354,6 @@ export function LogForm({ date, plan, items, registry, history }: {
                 onChange={setType}
               />
             </div>
-            <label className="log-field">
-              <span>Feel</span>
-              <input value={feel} placeholder="how it went, any niggles"
-                onChange={(e) => setFeel(e.target.value)} />
-            </label>
-            {region === "U" && (
-              <label className="log-field">
-                <span>MU note</span>
-                <input value={muNote} placeholder="chest to bar? where did the rep break?"
-                  onChange={(e) => setMuNote(e.target.value)} />
-              </label>
-            )}
           </>
         )}
         <div className="log-footer-row">

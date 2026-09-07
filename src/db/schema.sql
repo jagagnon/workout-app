@@ -64,6 +64,10 @@ create table if not exists plan (
 create index if not exists plan_region_date on plan (region, date desc);
 
 alter table session add column if not exists rpe      smallint check (rpe between 1 and 10);
+-- No longer written (2026-09-07). Per-exercise entry.notes replaced both: feel
+-- restated the session, mu_note restated whichever lift was that day's muscle-up
+-- touch. Kept, and still rendered on /sessions, because 53 of them were written
+-- before the change and two carry standing directives.
 alter table session add column if not exists feel     text;
 alter table session add column if not exists mu_note  text;
 

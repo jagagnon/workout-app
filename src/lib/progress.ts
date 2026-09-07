@@ -157,7 +157,7 @@ export async function muscleUpContext() {
 // it rides along flagged rather than vanishing. Same for recentSessions below.
 export async function recentActuals(region: "U" | "L", limit = 4) {
   return (await sql`
-    select s.date, s.region, s.type, s.rpe, s.feel, s.mu_note,
+    select s.date, s.region, s.type, s.rpe,
            json_agg(json_build_object(
              'exercise', x.canonical_name, 'metric', e.metric_value, 'metric_type', e.metric_type,
              'load_type', e.load_type, 'load_value', e.load_value,
