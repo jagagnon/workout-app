@@ -228,7 +228,7 @@ export async function recentSessions(limit = 20) {
            json_agg(json_build_object(
              'exercise', x.canonical_name, 'metric', e.metric_value,
              'load_type', e.load_type, 'load_value', e.load_value, 'unit', e.load_unit,
-             'sets', e.sets, 'skipped', e.skipped
+             'sets', e.sets, 'skipped', e.skipped, 'notes', e.notes
            ) order by e.id) as entries
     from session s
     join entry e on e.session_id = s.id
@@ -256,12 +256,12 @@ export async function roadmapAchieved() {
       where name = 'Muscle-up' and load_type = 'assisted' and load_value is not null
       order by load_value desc, date desc limit 1)
     union all
-    -- The count of negatives, not their duration: the sets column carries the
-    -- 5 singles, metric_value carries the 8s hold. Rows with no set count are
-    -- no evidence of a count and are skipped, not assumed to be a single.
-    (select 'negatives', sets, date from logged
-      where name = 'Muscle-up negative' and sets is not null
-      order by sets desc, date desc limit 1)
+    -- The count of clean negatives. The metric_type guard matters: this lift
+    -- used to be recorded in seconds, and a hold duration must never be read
+    -- as a rep count.
+    (select 'negatives', metric_value, date from logged
+      where name = 'Muscle-up negative' and metric_type = 'reps'
+      order by metric_value desc, date desc limit 1)
     union all
     -- Rep-qualified: the roadmap asks for +12-13kg *at 3-5 reps*, so a heavy
     -- single would not satisfy it and must not be read as if it did.

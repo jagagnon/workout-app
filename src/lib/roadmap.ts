@@ -38,14 +38,15 @@ export const METRICS: RoadmapMetric[] = [
     format: (v) => (v === 0 ? "none" : `${v}kg`),
   },
   {
-    // The roadmap gate is a COUNT of clean negatives. The exercise records
-    // seconds (the 5-8s control hold), so the count lives in `sets` — "5 singles
-    // @ 8s" is sets 5, metric 8s. Reading metric_value here compared a duration
-    // against a rep target and reported the gate met at 8s.
+    // The gate is a COUNT of clean negatives. The hold is not timed — Julien
+    // just holds as long as he can — so seconds are an observation for the
+    // notes, never the metric. metricType pins that: this once read 8 seconds
+    // of hold as 8 clean reps and called the 6-8 gate met.
     key: "negatives",
     label: "Unassisted negatives",
     exercise: "Muscle-up negative",
-    read: "sets",
+    read: "reps",
+    metricType: "reps",
     unit: "",
     format: (v) => `${v}`,
   },

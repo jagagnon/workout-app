@@ -73,10 +73,12 @@ test("roadmapStatus covers every metric in order", () => {
   assert.deepEqual(rows.map((r) => r.metric.key), METRICS.map((m) => m.key));
 });
 
-test("a hold duration can never satisfy a count gate", () => {
-  // The negatives metric reads `sets` (the count of singles), not metric_value
-  // (the 5-8s control hold). Reading the duration reported 8s as 8 clean reps.
-  assert.equal(negatives.read, "sets");
-  const ringdip2 = METRICS.find((m) => m.key === "ringdip")!;
-  assert.equal(ringdip2.metricType, "reps");
+test("count gates are pinned to reps, so a duration can never satisfy one", () => {
+  // Negatives were recorded in seconds; 8s of hold was read as 8 clean reps and
+  // reported the 6-8 gate met. Every count gate now names the unit it wants.
+  for (const key of ["negatives", "ringdip"] as const) {
+    const m = METRICS.find((x) => x.key === key)!;
+    assert.equal(m.read, "reps", `${key} should read a rep count`);
+    assert.equal(m.metricType, "reps", `${key} must pin metric_type`);
+  }
 });

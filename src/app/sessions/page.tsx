@@ -14,7 +14,7 @@ export default async function SessionsPage() {
   const sess = sessions as Array<{
     id: number; date: unknown; region: string | null; type: string | null;
     rpe: number | null; feel: string | null; mu_note: string | null;
-    entries: Array<{ exercise: string; metric: number; load_type: string; load_value: number | null; unit: string; sets: number | null; skipped: boolean }>;
+    entries: Array<{ exercise: string; metric: number; load_type: string; load_value: number | null; unit: string; sets: number | null; skipped: boolean; notes: string | null }>;
   }>;
 
   return (
@@ -43,7 +43,12 @@ export default async function SessionsPage() {
                 <div className="session-detail">
                   {s.entries.map((e, i) => (
                     <div className="entry-line" key={i}>
-                      <span className="ex">{e.exercise}</span>
+                      <span className="ex">
+                        {e.exercise}
+                        {/* Written on the log screen and, until now, never read back
+                            anywhere in the app — only the generator ever saw them. */}
+                        {e.notes && <span className="entry-note">{e.notes}</span>}
+                      </span>
                       <span className="res">
                         {/* 3x6 and 5x6 are different sessions, so the set count leads
                             when it was recorded. Older entries have none — those still

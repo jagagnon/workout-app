@@ -123,7 +123,7 @@ type EntryResult = {
   written: boolean;
   is_pr: boolean;
   display: string;
-  input: { exercise: string };
+  input: { exercise: string; notes?: string };
   candidates?: string[];
 };
 
@@ -330,6 +330,9 @@ export function LogForm({ date, plan, items, registry, history }: {
             <div key={i} className={`log-result${r.written ? "" : " warn"}`}>
               {r.written ? r.display : `${r.input.exercise} — needs confirmation${r.candidates?.length ? ` (did you mean ${r.candidates[0]}?)` : ""}`}
               {r.is_pr && <span className="log-pr">⬆ PR</span>}
+              {/* The cards are gone by the time this shows, so the note has to be
+                  echoed here or what you just typed leaves the screen with them. */}
+              {r.input.notes && <span className="log-result-note">{r.input.notes}</span>}
             </div>
           ))}
           {logged && (

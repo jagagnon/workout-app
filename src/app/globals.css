@@ -1176,3 +1176,22 @@ a { color: inherit; text-decoration: none; }
   .gate-goal { order: 2; }
   .pip { width: 100%; min-width: 22px; flex: 1; }
 }
+
+/* Per-exercise notes. Written on the log screen and, before this, readable
+   nowhere in the app — the generator was the only thing that ever saw them. */
+.entry-note {
+  display: block;
+  margin-top: 4px;
+  font-size: 11.5px;
+  line-height: 1.55;
+  color: var(--text-dim);
+  max-width: 62ch;
+}
+.log-result-note {
+  display: block;
+  margin-top: 3px;
+  font-family: var(--font-body);
+  font-size: 11.5px;
+  line-height: 1.55;
+  color: var(--text-dim);
+}
