@@ -100,3 +100,13 @@ test("empty and malformed bodies yield nothing rather than throwing", () => {
   assert.deepEqual(parsePlanBody(null), []);
   assert.deepEqual(parsePlanBody("just some prose"), []);
 });
+
+test("the warmup line is not a loggable block", () => {
+  // W is the warmup: its movements are largely not canonical exercises, so they
+  // must never become cards on the logger. The parser has always dropped it;
+  // generator-supplied items are filtered in src/app/log/page.tsx to match.
+  const items = parsePlanBody("W: Floor L-sit press, Y-W-T back extension\nA1: Muscle-up 4x3");
+  assert.equal(items.length, 1);
+  assert.equal(items[0].block, "A");
+  assert.ok(!items.some((i) => i.block?.toUpperCase() === "W"));
+});

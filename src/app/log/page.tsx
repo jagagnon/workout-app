@@ -44,7 +44,11 @@ export default async function LogPage({
   // plan.items is the structured prescription when the generator sent one;
   // otherwise parse the body block every existing plan already has.
   const raw = plan?.items?.length ? plan.items : parsePlanBody(plan?.body);
-  const items = resolveNames(raw, registry);
+  // The W block is the warmup. It stays in the stored plan — the prescription is
+  // the prescription — but it is not something to log: its movements are mostly
+  // not canonical exercises, so they arrived as empty "pick a lift" cards, and
+  // the one that did resolve got written as a real entry.
+  const items = resolveNames(raw.filter((i) => i.block?.toUpperCase() !== "W"), registry);
 
   // One round-trip for the whole session's history, not one per card.
   const history = await recentPerExercise(items.map((i) => i.exercise).filter(Boolean));
