@@ -36,7 +36,7 @@ export default async function LogPage({
   const [plan, registry] = await Promise.all([
     planForDate(date, region),
     sql`
-      select id, canonical_name, aliases, family, default_load_type, primary_metric
+      select id, canonical_name, aliases, family, default_load_type, primary_metric, region, accessory
       from exercise order by canonical_name
     ` as unknown as Promise<Array<RegistryRow & { aliases: string[] }>>,
   ]);

@@ -13,6 +13,8 @@ export interface RegistryRow {
   family: string | null;
   default_load_type: LoadType;
   primary_metric: MetricType;
+  region: "U" | "L" | "core" | null;
+  accessory: boolean;
 }
 
 type Card = {
@@ -178,15 +180,30 @@ export function LogForm({ date, plan, items, registry, history }: {
     } catch { /* private mode / quota — not worth failing over */ }
   }, [draftKey, cards, type, rpe, logged]);
 
-  const byFamily = useMemo(() => {
-    const groups = new Map<string, RegistryRow[]>();
-    for (const r of registry) {
-      const k = r.family ?? "Other";
-      if (!groups.has(k)) groups.set(k, []);
-      groups.get(k)!.push(r);
+  // Flat and alphabetical, not grouped by family — the dropdown is easier to
+  // scan when it's a straight list. Filtered to today's day (region) plus
+  // 'core', which shows on both; an untagged region is a fallback that never
+  // hides an exercise outright.
+  const visibleExercises = useMemo(() => {
+    return registry
+      .filter((r) => !r.accessory)
+      .filter((r) => r.region == null || r.region === "core" || r.region === region)
+      .slice()
+      .sort((a, b) => a.canonical_name.localeCompare(b.canonical_name));
+  }, [registry, region]);
+
+  // A card's already-selected lift must stay visible even if it doesn't match
+  // the current day filter (e.g. the region toggle changed after the plan
+  // populated the cards) — otherwise the select would silently show blank.
+  const optionsFor = useCallback((current: string) => {
+    if (current && !visibleExercises.some((r) => r.canonical_name === current)) {
+      const cur = registry.find((r) => r.canonical_name === current);
+      if (cur) {
+        return [...visibleExercises, cur].sort((a, b) => a.canonical_name.localeCompare(b.canonical_name));
+      }
     }
-    return [...groups.entries()].sort((a, b) => a[0].localeCompare(b[0]));
-  }, [registry]);
+    return visibleExercises;
+  }, [visibleExercises, registry]);
 
   const patch = useCallback((key: string, p: Partial<Card>) => {
     setCards((cs) => cs.map((c) => (c.key === key ? { ...c, ...p } : c)));
@@ -296,7 +313,7 @@ export function LogForm({ date, plan, items, registry, history }: {
             <LogCard
               key={c.key}
               card={c}
-              byFamily={byFamily}
+              options={optionsFor(c.exercise)}
               points={hist[c.exercise] ?? []}
               result={results?.find((r) => r.input.exercise === c.exercise)}
               onPatch={(p) => patch(c.key, p)}
@@ -311,7 +328,7 @@ export function LogForm({ date, plan, items, registry, history }: {
         <button
           type="button"
           className="log-add"
-          onClick={() => setCards((cs) => [...cs, blankCard(registry[0]?.canonical_name ?? "", registry[0])])}
+          onClick={() => setCards((cs) => [...cs, blankCard(visibleExercises[0]?.canonical_name ?? "", visibleExercises[0])])}
         >
           ＋ add exercise
         </button>
@@ -414,9 +431,9 @@ function Segmented({ value, options, onChange }: {
   );
 }
 
-function LogCard({ card: c, byFamily, points, result, onPatch, onSwap, onRemove }: {
+function LogCard({ card: c, options, points, result, onPatch, onSwap, onRemove }: {
   card: Card;
-  byFamily: Array<[string, RegistryRow[]]>;
+  options: RegistryRow[];
   points: HistoryPoint[];
   result?: EntryResult;
   onPatch: (p: Partial<Card>) => void;
@@ -438,11 +455,7 @@ function LogCard({ card: c, byFamily, points, result, onPatch, onSwap, onRemove 
           onChange={(e) => onSwap(e.target.value)}
         >
           {!c.exercise && <option value="">— pick a lift —</option>}
-          {byFamily.map(([family, rows]) => (
-            <optgroup key={family} label={family}>
-              {rows.map((r) => <option key={r.id} value={r.canonical_name}>{r.canonical_name}</option>)}
-            </optgroup>
-          ))}
+          {options.map((r) => <option key={r.id} value={r.canonical_name}>{r.canonical_name}</option>)}
         </select>
         <button
           type="button"

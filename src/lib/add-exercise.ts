@@ -7,6 +7,8 @@ export interface AddExerciseInput {
   primary_metric?: "reps" | "seconds" | "meters";
   default_load_type?: "added" | "assisted" | "external" | "bodyweight";
   family?: string;
+  region?: "U" | "L" | "core";
+  accessory?: boolean;
 }
 export interface AddExerciseResult {
   created: boolean;
@@ -27,9 +29,10 @@ export async function addExercise(input: AddExerciseInput): Promise<AddExerciseR
   }
 
   const [row] = await sql`
-    insert into exercise (canonical_name, aliases, primary_metric, default_load_type, is_key, family)
+    insert into exercise (canonical_name, aliases, primary_metric, default_load_type, is_key, family, region, accessory)
     values (${input.canonical_name}, ${input.aliases ?? []},
-            ${input.primary_metric ?? "reps"}, ${input.default_load_type ?? "bodyweight"}, false, ${input.family ?? null})
+            ${input.primary_metric ?? "reps"}, ${input.default_load_type ?? "bodyweight"}, false, ${input.family ?? null},
+            ${input.region ?? null}, ${input.accessory ?? false})
     returning id
   `;
   return {

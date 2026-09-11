@@ -11,6 +11,8 @@
     "db:schema": "psql \"$DATABASE_URL\" -f src/db/schema.sql",
     "db:seed": "tsx --env-file=.env.local src/db/seed-exercises.ts",
     "db:migrate-prs": "tsx --env-file=.env.local src/db/migrate-prs.ts",
+    "db:migrate-exercise-region": "tsx --env-file=.env.local src/db/migrate-exercise-region.ts",
+    "db:migrate-exercise-accessory": "tsx --env-file=.env.local src/db/migrate-exercise-accessory.ts",
     "db:seed-plans": "tsx --env-file=.env.local src/db/seed-plans.ts"
   },
   "dependencies": {

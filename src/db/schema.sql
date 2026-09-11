@@ -96,6 +96,16 @@ create table if not exists auth_attempt (
 );
 create index if not exists auth_attempt_ip_time on auth_attempt (ip, created_at desc);
 
+-- Which day(s) an exercise belongs on. 'core' shows up on both Upper and Lower
+-- days; the /log dropdown filters to the current day's region plus 'core'.
+alter table exercise add column if not exists region text check (region in ('U','L','core'));
+
+-- Accessory/filler movements (e.g. plyometrics used as warmup power work) that
+-- clutter the /log dropdown without being something to deliberately pick and
+-- track there. History and PRs are untouched — this only hides the option from
+-- the picker; an already-selected card still shows its own value.
+alter table exercise add column if not exists accessory boolean not null default false;
+
 -- Redefined after `skipped` exists: a skipped exercise is not a zero-rep result.
 create or replace view v_prs as
 select

@@ -70,6 +70,12 @@ const mcpHandler = createMcpHandler(
         family: z.string().optional().describe(
           "Movement-variant group for the PR board (e.g. 'Row', 'Push-up', 'Pull-up', 'Dip') — only set if this is a variation of an existing tracked movement pattern, so it visually clusters with the others.",
         ),
+        region: z.enum(["U", "L", "core"]).optional().describe(
+          "Which day's /log dropdown this shows up in — 'U' (Upper), 'L' (Lower), or 'core' to appear on both. Leave unset only if genuinely unclear; an unset exercise still shows on every day as a fallback.",
+        ),
+        accessory: z.boolean().optional().describe(
+          "True for filler/warmup movements (e.g. plyometrics) that shouldn't clutter the /log dropdown — they're tracked in history but never offered as a pick. Defaults false.",
+        ),
       },
       async (args) => {
         const res = await addExercise(args);
