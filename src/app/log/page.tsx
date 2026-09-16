@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { sql } from "../../db/client";
 import { planForDate } from "../../lib/plans";
-import { parsePlanBody } from "../../lib/plan-body";
+import { parsePlanBody, extractPreface } from "../../lib/plan-body";
 import { matchExercise, type ExerciseRow } from "../../lib/exercises";
 import { recentPerExercise } from "../../lib/progress";
 import { LogForm, type RegistryRow } from "./LogForm";
@@ -44,11 +44,15 @@ export default async function LogPage({
   // plan.items is the structured prescription when the generator sent one;
   // otherwise parse the body block every existing plan already has.
   const raw = plan?.items?.length ? plan.items : parsePlanBody(plan?.body);
-  // The W block is the warmup. It stays in the stored plan — the prescription is
-  // the prescription — but it is not something to log: its movements are mostly
-  // not canonical exercises, so they arrived as empty "pick a lift" cards, and
-  // the one that did resolve got written as a real entry.
-  const items = resolveNames(raw.filter((i) => i.block?.toUpperCase() !== "W"), registry);
+  // W (warm-up) and A (plyo) stay in the stored plan — the prescription is the
+  // prescription — but neither is something to log: their movements are mostly
+  // not canonical exercises, so they arrived as empty "pick a lift" cards. They
+  // render as the text preface below instead.
+  const items = resolveNames(
+    raw.filter((i) => !["W", "A"].includes(i.block?.toUpperCase() ?? "")),
+    registry,
+  );
+  const preface = extractPreface(plan?.body);
 
   // One round-trip for the whole session's history, not one per card.
   const history = await recentPerExercise(items.map((i) => i.exercise).filter(Boolean));
@@ -61,6 +65,22 @@ export default async function LogPage({
           <h1 className="wordmark" style={{ fontSize: "clamp(28px, 6vw, 44px)" }}>Log</h1>
         </div>
       </header>
+      {(preface.warmup.length > 0 || preface.plyo.length > 0) && (
+        <section className="card rise" style={{ marginBottom: 18 }}>
+          {preface.warmup.length > 0 && (
+            <>
+              <div className="card-title">Warm-up</div>
+              <p className="log-plan-body">{preface.warmup.join(" · ")}</p>
+            </>
+          )}
+          {preface.plyo.length > 0 && (
+            <>
+              <div className="card-title" style={preface.warmup.length ? { marginTop: 14 } : undefined}>Plyo</div>
+              <p className="log-plan-body">{preface.plyo.join(" · ")}</p>
+            </>
+          )}
+        </section>
+      )}
       <LogForm
         date={date}
         plan={plan}

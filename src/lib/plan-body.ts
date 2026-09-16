@@ -74,6 +74,40 @@ function parseOne(label: string, block: string, raw: string): PlanItem | null {
   };
 }
 
+export interface Preface {
+  warmup: string[];
+  plyo: string[];
+}
+
+// Warm-up (`W`) and plyo (`A`) are prescribed but never logged — their
+// movements mostly aren't canonical exercises, so they never belong in
+// `parsePlanBody`'s output. Julien still wants them visible on the page
+// though, read off as a preface ahead of the loggable blocks, so this pulls
+// just those two lines out of `body` as plain text rather than structured
+// items.
+export function extractPreface(body: string | null | undefined): Preface {
+  const warmup: string[] = [];
+  const plyo: string[] = [];
+  if (!body) return { warmup, plyo };
+
+  for (const line of body.split(/\r?\n/)) {
+    const trimmed = line.trim();
+    if (!trimmed) continue;
+
+    const w = trimmed.match(/^W\s*:\s*(.+)$/i);
+    if (w) {
+      warmup.push(...w[1].split(",").map((s) => s.trim()).filter(Boolean));
+      continue;
+    }
+
+    for (const segment of trimmed.split("|")) {
+      const a = segment.trim().match(/^A\d*\s*:\s*(.+)$/i);
+      if (a) plyo.push(a[1].trim());
+    }
+  }
+  return { warmup, plyo };
+}
+
 export function parsePlanBody(body: string | null | undefined): PlanItem[] {
   if (!body) return [];
   const items: PlanItem[] = [];
