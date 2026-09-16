@@ -6,7 +6,7 @@ const REGISTRY: ExerciseRow[] = [
   { id: 1, canonical_name: "Chin-ups", aliases: ["chins", "weighted chin-ups"] },
   { id: 2, canonical_name: "Muscle-up", aliases: ["muscle up", "mu"] },
   { id: 3, canonical_name: "Dips", aliases: ["dip"] },
-  { id: 4, canonical_name: "Pull-ups", aliases: ["pull up", "pullup"] },
+  { id: 4, canonical_name: "Pull-ups", aliases: ["pull up", "pullup", "weighted pull-ups"] },
 ];
 
 test("exact canonical match", () => {
@@ -29,6 +29,14 @@ test("no confident match → needs_confirmation with candidates", () => {
   assert.equal(r.exercise_id, null);
   assert.equal(r.resolution, "needs_confirmation");
   assert.ok(Array.isArray(r.candidates));
+});
+test("a weighted variant of a bodyweight lift matches via alias, not needs_confirmation", () => {
+  // "weighted pull ups" is too far from "Pull-ups" by fuzzy distance alone (the
+  // "weighted" prefix pushed it past the 0.25 threshold) — it needs the explicit
+  // alias, same as "weighted chin-ups" already has for Chin-ups.
+  const r = matchExercise("weighted pull ups", REGISTRY);
+  assert.equal(r.exercise_id, 4);
+  assert.equal(r.resolution, "alias");
 });
 
 test("conflict: exact canonical name is a collision", () => {

@@ -442,9 +442,21 @@ function LogCard({ card: c, options, points, result, onPatch, onSwap, onRemove }
 }) {
   const [showNote, setShowNote] = useState(false);
   const presc = prescriptionLine(c.presc);
+  // Load/assist is the progression signal for a loaded lift — reps just say the
+  // set finished. Bodyweight-only exercises have no load axis, so those still chart reps.
+  // Checked across all shown points, not just the latest: a lift that's mostly
+  // bodyweight with an occasional loaded set (or vice versa) must not have its
+  // axis flip depending on which one happened to be logged last.
+  const hasLoad = points.some((p) => p.load_type != null && p.load_type !== "bodyweight");
   const spark = points
-    .map((p) => ({ t: new Date(p.date).getTime(), label: fmtDate(p.date), v: Number(p.metric_value) }))
+    .map((p) => ({
+      t: new Date(p.date).getTime(),
+      label: fmtDate(p.date),
+      v: hasLoad ? Number(p.load_value) : Number(p.metric_value),
+    }))
+    .filter((p) => !Number.isNaN(p.v))
     .reverse();
+  const sparkFmt = hasLoad ? (v: number) => `${v > 0 ? "+" : ""}${v}kg` : (v: number) => `${v}`;
 
   return (
     <div className={`log-card${c.skipped ? " skipped" : ""}`}>
@@ -537,7 +549,7 @@ function LogCard({ card: c, options, points, result, onPatch, onSwap, onRemove }
                   {points[0]?.notes && <div className="log-hist-note">{points[0].notes}</div>}
                 </div>
                 {spark.length > 1 && (
-                  <div className="log-hist-spark"><Sparkline data={spark} fmt={(v) => `${v}`} /></div>
+                  <div className="log-hist-spark"><Sparkline data={spark} fmt={sparkFmt} /></div>
                 )}
               </>
             ) : (

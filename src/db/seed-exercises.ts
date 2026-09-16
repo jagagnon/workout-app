@@ -3,7 +3,7 @@ import { sql } from "./client";
 // canonical_name, aliases, primary_metric, default_load_type
 const EXERCISES: [string, string[], "reps" | "seconds" | "meters", string][] = [
   ["Muscle-up", ["muscle up", "mu", "bar muscle-up", "ring muscle-up"], "reps", "assisted"],
-  ["Pull-ups", ["pull up", "pullup", "pull-up"], "reps", "bodyweight"],
+  ["Pull-ups", ["pull up", "pullup", "pull-up", "weighted pull-ups", "weighted pull ups", "weighted pull-up"], "reps", "bodyweight"],
   ["Chest-to-bar pull-up", ["chest to bar", "sternum to bar", "c2b", "ctb", "chest-to-bar", "c2b pull-up"], "reps", "bodyweight"],
   ["High pull-ups", ["High pulls", "high pull", "high pulls", "lower abs to bar", "abs to bar"], "reps", "assisted"],
   ["Chin-ups", ["chin up", "chins", "weighted chin-ups", "chinup"], "reps", "bodyweight"],
