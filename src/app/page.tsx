@@ -18,10 +18,10 @@ const fmtDate = (d: unknown) => fmtDay(d as string);
 // it lives here as a standing reference rather than in any one day's plan.
 const UPPER_WARMUP = [
   "Y-W-T",
-  "Scap pulls",
+  "Elbow scap push-ups",
   "Straight-arm pulldowns",
   "Single-arm banded punch",
-  "Elbow scap push-ups",
+  "Scap pulls",
   "Ring shrugs",
   "Bottom-position dip scap hold/pulses",
 ];
