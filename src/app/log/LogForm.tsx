@@ -47,6 +47,15 @@ const loadButton = (t: LoadType): LoadType => (t === "external" ? "added" : t);
 let seq = 0;
 const nextKey = () => `c${seq++}`;
 
+// Cheap, non-cryptographic content hash — just needs to change when `body`
+// does, so a corrected plan gets a fresh draft key instead of the old draft
+// silently winning over the correction on every future load.
+function fingerprint(s: string): string {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0;
+  return (h >>> 0).toString(36);
+}
+
 function blankCard(exercise: string, reg?: RegistryRow): Card {
   return {
     key: nextKey(), block: null, label: null, exercise,
@@ -154,7 +163,10 @@ export function LogForm({ date, plan, items, registry, history }: {
   const [passcode, setPasscode] = useState("");
   const restored = useRef(false);
 
-  const draftKey = `wa-log-draft:${date}:${region}`;
+  // Keying on the plan's own content means a corrected plan (a re-push with a
+  // different body) gets a fresh key automatically — the old draft is simply
+  // orphaned rather than silently overriding the correction.
+  const draftKey = `wa-log-draft:${date}:${region}:${fingerprint(plan?.body ?? "")}`;
 
   // Draft survives a phone lock or an accidental reload mid-workout.
   useEffect(() => {
