@@ -13,6 +13,18 @@ const PROGRAM_START = new Date("2026-06-01T00:00:00Z");
 
 const fmtDate = (d: unknown) => fmtDay(d as string);
 
+// Upper's warm-up isn't generated per session (see workout-generator SKILL.md) —
+// Julien runs this same fixed routine on his own before every Upper session, so
+// it lives here as a standing reference rather than in any one day's plan.
+const UPPER_WARMUP = [
+  "Straight-arm pulldowns",
+  "Elbow scap push-ups",
+  "Single-arm banded punch",
+  "Ring shrugs",
+  "Y-W-T",
+  "Scap pulls",
+];
+
 export default async function Home() {
   const [ladderRaw, prs, calendarRows, muCtx, achieved] = await Promise.all([
     muscleUpLadder(), prBoard(), recentCalendar(), muscleUpContext(), roadmapAchieved(),
@@ -88,7 +100,12 @@ export default async function Home() {
           )}
         </section>
 
-        <section className="card span2 rise" style={{ animationDelay: "175ms" }}>
+        <section className="card rise" style={{ animationDelay: "175ms" }}>
+          <div className="card-title">Warm-up · Upper</div>
+          <p className="log-plan-body">{UPPER_WARMUP.join(" · ")}</p>
+        </section>
+
+        <section className="card span2 rise" style={{ animationDelay: "210ms" }}>
           <div className="card-title-row">
             <div className="card-title">Roadmap Gates</div>
             <span className="cal-hint">to {GOAL.toISOString().slice(0, 7)}</span>
@@ -96,7 +113,7 @@ export default async function Home() {
           <RoadmapGates achieved={achieved} today={today} />
         </section>
 
-        <section className="card rise" style={{ animationDelay: "210ms" }}>
+        <section className="card rise" style={{ animationDelay: "245ms" }}>
           <div className="card-title-row">
             <div className="card-title">PR Board</div>
             <Link href="/prs" className="card-title-nav">All PRs &rarr;</Link>
@@ -104,7 +121,7 @@ export default async function Home() {
           <PrBoard rows={prs} />
         </section>
 
-        <Link href="/sessions" className="card span2 cal-card rise" style={{ animationDelay: "280ms" }}>
+        <Link href="/sessions" className="card span2 cal-card rise" style={{ animationDelay: "315ms" }}>
           <div className="card-title-row">
             <div className="card-title">Training Calendar</div>
             <span className="cal-hint">Full log &rarr;</span>
