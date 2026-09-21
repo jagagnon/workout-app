@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { muscleUpContext, muscleUpLadder, prBoard, recentCalendar, roadmapAchieved } from "../lib/progress";
+import { planForDate } from "../lib/plans";
 import { LadderChart } from "./components/LadderChart";
 import { PrBoard } from "./components/PrBoard";
 import { WorkoutCalendar } from "./components/WorkoutCalendar";
@@ -12,6 +13,13 @@ const GOAL = new Date("2026-12-01T00:00:00Z");
 const PROGRAM_START = new Date("2026-06-01T00:00:00Z");
 
 const fmtDate = (d: unknown) => fmtDay(d as string);
+
+// Local TZ-correct "today" (mirrors log/page.tsx; kept self-contained).
+function todayZurich(): string {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Zurich", year: "numeric", month: "2-digit", day: "2-digit",
+  }).format(new Date());
+}
 
 // Upper's warm-up isn't generated per session (see workout-generator SKILL.md) —
 // Julien runs this same fixed routine on his own before every Upper session, so
@@ -27,8 +35,9 @@ const UPPER_WARMUP = [
 ];
 
 export default async function Home() {
-  const [ladderRaw, prs, calendarRows, muCtx, achieved] = await Promise.all([
+  const [ladderRaw, prs, calendarRows, muCtx, achieved, todaysPlan] = await Promise.all([
     muscleUpLadder(), prBoard(), recentCalendar(), muscleUpContext(), roadmapAchieved(),
+    planForDate(todayZurich()),
   ]);
   const today = new Date().toISOString().slice(0, 10);
 
@@ -101,10 +110,12 @@ export default async function Home() {
           )}
         </section>
 
-        <section className="card rise" style={{ animationDelay: "175ms" }}>
-          <div className="card-title">Warm-up · Upper</div>
-          <p className="log-plan-body">{UPPER_WARMUP.join(" · ")}</p>
-        </section>
+        {todaysPlan?.region === "U" && (
+          <section className="card rise" style={{ animationDelay: "175ms" }}>
+            <div className="card-title">Warm-up · Upper</div>
+            <p className="log-plan-body">{UPPER_WARMUP.join(" · ")}</p>
+          </section>
+        )}
 
         <section className="card span2 rise" style={{ animationDelay: "210ms" }}>
           <div className="card-title-row">
