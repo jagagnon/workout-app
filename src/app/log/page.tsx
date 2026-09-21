@@ -75,7 +75,9 @@ export default async function LogPage({
           )}
           {preface.plyo.length > 0 && (
             <>
-              <div className="card-title" style={preface.warmup.length ? { marginTop: 14 } : undefined}>Plyo</div>
+              <div className="card-title" style={preface.warmup.length ? { marginTop: 14 } : undefined}>
+                {plan?.region === "U" ? "Skill" : "Plyo"}
+              </div>
               <p className="log-plan-body">{preface.plyo.join(" · ")}</p>
             </>
           )}
