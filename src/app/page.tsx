@@ -17,12 +17,13 @@ const fmtDate = (d: unknown) => fmtDay(d as string);
 // Julien runs this same fixed routine on his own before every Upper session, so
 // it lives here as a standing reference rather than in any one day's plan.
 const UPPER_WARMUP = [
-  "Straight-arm pulldowns",
-  "Elbow scap push-ups",
-  "Single-arm banded punch",
-  "Ring shrugs",
   "Y-W-T",
   "Scap pulls",
+  "Straight-arm pulldowns",
+  "Single-arm banded punch",
+  "Elbow scap push-ups",
+  "Ring shrugs",
+  "Bottom-position dip scap hold/pulses",
 ];
 
 export default async function Home() {
