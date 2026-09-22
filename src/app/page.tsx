@@ -27,7 +27,7 @@ function todayZurich(): string {
 const UPPER_WARMUP = [
   "Y-W-T",
   "Elbow scap push-ups",
-  "Straight-arm pulldowns",
+  "Single-arm crossover pulldown — R emphasis",
   "Single-arm banded punch",
   "Scap pulls",
   "Ring shrugs",
