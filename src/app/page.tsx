@@ -6,6 +6,7 @@ import { PrBoard } from "./components/PrBoard";
 import { WorkoutCalendar } from "./components/WorkoutCalendar";
 import { RoadmapGates } from "./components/RoadmapGates";
 import { fmtDay } from "../lib/date-format";
+import { UPPER_WARMUP } from "../lib/warmup";
 
 export const dynamic = "force-dynamic";
 
@@ -20,19 +21,6 @@ function todayZurich(): string {
     timeZone: "Europe/Zurich", year: "numeric", month: "2-digit", day: "2-digit",
   }).format(new Date());
 }
-
-// Upper's warm-up isn't generated per session (see workout-generator SKILL.md) —
-// Julien runs this same fixed routine on his own before every Upper session, so
-// it lives here as a standing reference rather than in any one day's plan.
-const UPPER_WARMUP = [
-  "Y-W-T",
-  "Elbow scap push-ups",
-  "Single-arm crossover pulldown — R emphasis",
-  "Single-arm banded punch",
-  "Scap pulls",
-  "Ring shrugs",
-  "Bottom-position dip scap hold/pulses",
-];
 
 export default async function Home() {
   const [ladderRaw, prs, calendarRows, muCtx, achieved, todaysPlan] = await Promise.all([

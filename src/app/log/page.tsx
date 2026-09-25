@@ -4,6 +4,7 @@ import { planForDate } from "../../lib/plans";
 import { parsePlanBody, extractPreface } from "../../lib/plan-body";
 import { matchExercise, type ExerciseRow } from "../../lib/exercises";
 import { recentPerExercise } from "../../lib/progress";
+import { UPPER_WARMUP } from "../../lib/warmup";
 import { LogForm, type RegistryRow } from "./LogForm";
 import type { PlanItem } from "../../lib/types";
 
@@ -53,6 +54,9 @@ export default async function LogPage({
     registry,
   );
   const preface = extractPreface(plan?.body);
+  // Upper plans never carry a W line — the warm-up is the fixed routine, not
+  // generated — so fall back to it whenever the plan is Upper.
+  if (plan?.region === "U" && preface.warmup.length === 0) preface.warmup = UPPER_WARMUP;
 
   // One round-trip for the whole session's history, not one per card.
   const history = await recentPerExercise(items.map((i) => i.exercise).filter(Boolean));
