@@ -19,7 +19,7 @@ const EXERCISES: [string, string[], "reps" | "seconds" | "meters", string][] = [
   ["L-sit hold", ["l sit", "l-sit"], "seconds", "bodyweight"],
   ["Front lever tuck hold", ["front lever tuck", "tuck front lever"], "seconds", "bodyweight"],
   ["Hollow body hold", ["hollow hold", "hollow body"], "seconds", "bodyweight"],
-  ["Single-arm farmer's carry", ["farmers carry", "farmer carry"], "meters", "external"],
+  ["Farmer's carry (single-arm)", ["farmers carry", "farmer carry", "Single-arm farmer's carry"], "meters", "external"],
   ["Bulgarian split squat", ["bss", "split squat"], "reps", "external"],
   ["Single leg RDL", ["sl rdl", "single-leg rdl"], "reps", "external"],
   ["Goblet cossack squat", ["cossack squat", "goblet cossack"], "reps", "external"],
