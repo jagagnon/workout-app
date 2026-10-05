@@ -6,6 +6,7 @@ import { deleteExercise } from "../../../lib/delete-exercise";
 import { deleteEntry } from "../../../lib/delete-entry";
 import { exerciseProgression, muscleUpLadder, prBoard, recentActuals } from "../../../lib/progress";
 import { logPlan, recentPlans } from "../../../lib/plans";
+import { safeEqual } from "../../../lib/auth";
 
 const entrySchema = z.object({
   exercise: z.string(),
@@ -179,7 +180,7 @@ const mcpHandler = createMcpHandler(
 async function authed(req: Request): Promise<Response> {
   const url = new URL(req.url);
   const secret = process.env.MCP_SECRET;
-  if (!secret || url.searchParams.get("key") !== secret) {
+  if (!secret || !safeEqual(url.searchParams.get("key") ?? "", secret)) {
     return new Response("unauthorized", { status: 401 });
   }
   return mcpHandler(req);

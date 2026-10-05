@@ -7,7 +7,7 @@ export const SESSION_MAX_AGE = 60 * 60 * 24 * 30; // 30 days
 
 // Length-safe constant-time compare. timingSafeEqual throws on length mismatch,
 // so hash both sides to a fixed width first.
-function safeEqual(a: string, b: string): boolean {
+export function safeEqual(a: string, b: string): boolean {
   const key = "cmp";
   const ha = createHmac("sha256", key).update(a).digest();
   const hb = createHmac("sha256", key).update(b).digest();
