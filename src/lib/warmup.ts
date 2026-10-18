@@ -10,4 +10,5 @@ export const UPPER_WARMUP = [
   "Scap pulls",
   "Ring shrugs",
   "Bottom-position dip scap hold/pulses",
+  "Jefferson curl — bodyweight only, on roller, feet dorsiflexed, slow segmental roll-down",
 ];
