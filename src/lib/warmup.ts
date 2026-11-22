@@ -5,10 +5,11 @@
 export const UPPER_WARMUP = [
   "Y-W-T",
   "Elbow scap push-ups",
-  "Single-arm crossover pulldown — R emphasis",
-  "Single-arm banded punch",
   "Scap pulls",
-  "Ring shrugs",
-  "Bottom-position dip scap hold/pulses",
-  "Jefferson curl — bodyweight only, on roller, feet dorsiflexed, slow segmental roll-down",
+  "Banded pull-apart",
+  "Ring or bar support hold — 20–30 s",
+  "Plank — 30 s",
+  "Side plank — 30 s each side",
+  "Reverse plank — 30 s",
+  "Jefferson curl — optional, bodyweight only, on roller, feet dorsiflexed, slow segmental roll-down",
 ];
